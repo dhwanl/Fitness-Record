@@ -18,9 +18,9 @@ public class ExerciseTest {
         assertEquals("Leg extension", exercise.getExerciseName());
         assertEquals("LEGS", exercise.getMuscleType().toString());
 
-        exercise = new Exercise("Incline bench press", Muscles.LEGS, 60, 4, 10);
+        exercise = new Exercise("Incline bench press", Muscles.CHEST, 60, 4, 10);
         assertEquals("Incline bench press", exercise.getExerciseName());
-        assertEquals(Muscles.LEGS, exercise.getMuscleType());
+        assertEquals(Muscles.CHEST, exercise.getMuscleType());
         assertEquals(60, exercise.getWeightLifted());
         assertEquals(4, exercise.getNumSets());
         assertEquals(10, exercise.getNumReps());
