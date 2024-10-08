@@ -16,7 +16,7 @@
 
 ## User Stories
 
-- As a user, I want to be able to add and remove new exercises to my workout routine
+- As a user, I want to be able to add and remove a new exercise to my workout routine
 - As a user, I want to be able to delete my workout log if I no longer wish to track it 
 - As a user, I want to be able to view all exercises and my workout log to track my progress
 - As a user, I want to be able to specify the exercise type, weight lifted, and number of sets and reps
