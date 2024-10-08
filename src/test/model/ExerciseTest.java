@@ -27,8 +27,24 @@ public class ExerciseTest {
     }
 
     @Test
+    void testSetmethods() {
+        exercise.setExerciseName("shoulder press");
+        assertEquals("Shoulder press", exercise.getExerciseName());
+        exercise.setMuscleType(Muscles.SHOULDERS);
+        assertEquals("SHOULDERS", Muscles.SHOULDERS.toString());
+        exercise.setNumReps(10);
+        assertEquals(10, exercise.getNumReps());
+        exercise.setNumSets(3);
+        assertEquals(3, exercise.getNumSets());
+        exercise.setWeightLifted(40);
+        assertEquals(40, exercise.getWeightLifted());
+    }
+
+    @Test
     void testIsLengthZero() {
         assertFalse(exercise.isLengthZero(exercise.getExerciseName()));
+        exercise.setExerciseName("");
+        assertTrue(exercise.isLengthZero(exercise.getExerciseName()));
     }
 
 }
