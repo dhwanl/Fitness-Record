@@ -1,8 +1,5 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 // Specify the exercise type, weight lifted, and number of sets and reps, as well as users can add and remove exercises
 public class Exercise {
     private String exerciseName;    // the type of exercise
