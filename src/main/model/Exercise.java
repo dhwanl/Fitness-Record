@@ -14,7 +14,7 @@ public class Exercise {
      *          weightLifted, numSets, and numReps are initially set to zero; group exercises based on muscleType;
      */
     public Exercise(String exerciseName, Muscles muscleType) {
-        this.exerciseName = exerciseName.substring(0, 1).toUpperCase() + exerciseName.substring(1).toLowerCase();
+        this.exerciseName = capitalizationForFirstLetter(exerciseName);
         this.muscleType = muscleType;
         this.weightLifted = 0.0;
         this.numSets = 0;
@@ -27,7 +27,7 @@ public class Exercise {
      *          weightLifted, numSets, and numReps are set to the given value
      */
     public Exercise(String exerciseName, Muscles muscleType, double weightLifted, int numSets, int numReps) {
-        this.exerciseName = exerciseName.substring(0, 1).toUpperCase() + exerciseName.substring(1).toLowerCase();
+        this.exerciseName = capitalizationForFirstLetter(exerciseName);
         this.muscleType = muscleType;
         this.weightLifted = weightLifted;
         this.numSets = numSets;
@@ -39,11 +39,19 @@ public class Exercise {
      *          Otherwise, return true with the error message
      */
     public boolean isLengthZero(String exerciseName) {
-        if(exerciseName.length() > 0){
-            return false;
+        if(exerciseName.length() <= 0){
+            return true;
         }
 
-        return true;
+        return false;
+    }
+
+    /*
+     * EFFECTS: convert case; 
+     *          return a string that has the first letter in the upper case and the rest of letters in the lower case
+     */
+    public String capitalizationForFirstLetter(String exerciseName) {
+        return exerciseName.substring(0, 1).toUpperCase() + exerciseName.substring(1).toLowerCase();
     }
 
     // getters
@@ -69,7 +77,11 @@ public class Exercise {
     
     // setters
     public void setExerciseName(String exerciseName) {
-        this.exerciseName = exerciseName;
+        if(!isLengthZero(exerciseName)) {
+            this.exerciseName = capitalizationForFirstLetter(exerciseName);
+        } else {
+            this.exerciseName = exerciseName;
+        }
     }
 
     public void setWeightLifted(int weight) {
@@ -78,6 +90,10 @@ public class Exercise {
 
     public void setNumReps(int reps) {
         this.numReps = reps;
+    }
+
+    public void setNumSets(int sets) {
+        this.numSets = sets;
     }
 
     public void setMuscleType(Muscles muscleType) {
