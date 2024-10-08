@@ -10,8 +10,8 @@ public class Exercise {
 
     /*
      * REQUIRES: exerciseName has a non-zero length
-     * EFFECTS: name of the type of exercise is set to exerciseType, and check if this exerciseType is already in exerciseList; 
-     *          weightLifted, numSets, and numReps are initially set to zero; group exercises based on muscleType;
+     * EFFECTS: name of the type of exercise is set to exerciseName. 
+     *          WeightLifted, numSets, and numReps are initially set to zero; group exercises based on muscleType;
      */
     public Exercise(String exerciseName, Muscles muscleType) {
         this.exerciseName = capitalizationForFirstLetter(exerciseName);
@@ -22,8 +22,8 @@ public class Exercise {
     }
 
     /*
-     * REQUIRES: exerciseType has a non-zero length; weightLifted >= 0.0; numSets and numReps >= 0
-     * EFFECTS: name of the type of exercise is set to exerciseType and check if this exerciseType is already in exerciseList; 
+     * REQUIRES: exerciseName has a non-zero length; weightLifted >= 0.0; numSets and numReps >= 0
+     * EFFECTS: name of the type of exercise is set to exerciseName.
      *          weightLifted, numSets, and numReps are set to the given value
      */
     public Exercise(String exerciseName, Muscles muscleType, double weightLifted, int numSets, int numReps) {
