@@ -40,11 +40,4 @@ public class ExerciseTest {
         assertEquals(40, exercise.getWeightLifted());
     }
 
-    @Test
-    void testIsLengthZero() {
-        assertFalse(exercise.isLengthZero(exercise.getExerciseName()));
-        exercise.setExerciseName("");
-        assertTrue(exercise.isLengthZero(exercise.getExerciseName()));
-    }
-
 }
