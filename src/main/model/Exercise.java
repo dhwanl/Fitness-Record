@@ -24,7 +24,7 @@ public class Exercise {
     /*
      * REQUIRES: exerciseName has a non-zero length; weightLifted >= 0.0; numSets and numReps >= 0
      * EFFECTS: name of the type of exercise is set to exerciseName.
-     *          weightLifted, numSets, and numReps are set to the given value
+     *          weightLifted, numSets, and numReps are set by the given value
      */
     public Exercise(String exerciseName, Muscles muscleType, double weightLifted, int numSets, int numReps) {
         this.exerciseName = capitalizationForFirstLetter(exerciseName);
@@ -35,20 +35,10 @@ public class Exercise {
     }
 
     /*
-     * EFFECTS: return false if the length of the name of exercise is not zero.
-     *          Otherwise, return true with the error message
-     */
-    public boolean isLengthZero(String exerciseName) {
-        if(exerciseName.length() <= 0){
-            return true;
-        }
-
-        return false;
-    }
-
-    /*
+     * REQUIRES: exerciseName is not empty or null
      * EFFECTS: convert case; 
-     *          return a string that has the first letter in the upper case and the rest of letters in the lower case
+     *          return a string that has the first letter in the upper case \
+     *          and the rest of letters in the lower case
      */
     public String capitalizationForFirstLetter(String exerciseName) {
         return exerciseName.substring(0, 1).toUpperCase() + exerciseName.substring(1).toLowerCase();
@@ -77,14 +67,10 @@ public class Exercise {
     
     // setters
     public void setExerciseName(String exerciseName) {
-        if(!isLengthZero(exerciseName)) {
-            this.exerciseName = capitalizationForFirstLetter(exerciseName);
-        } else {
-            this.exerciseName = exerciseName;
-        }
+        this.exerciseName = capitalizationForFirstLetter(exerciseName);
     }
 
-    public void setWeightLifted(int weight) {
+    public void setWeightLifted(double weight) {
         this.weightLifted = weight;
     }
 
