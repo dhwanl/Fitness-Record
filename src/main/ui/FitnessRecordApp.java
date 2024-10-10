@@ -39,30 +39,31 @@ public class FitnessRecordApp {
     }
 
     /*
-     * EFFECTS: display main menu on the console, allowing users to choose from menu options.
-     *          get the users' response to the menu option
-     *          , and then call menuOption method based on their selection.
+     * EFFECTS: display main menu on the console, allowing users to choose from menu
+     * options.
+     * get the users' response to the menu option
+     * , and then call menuOption method based on their selection.
      */
     private void runRecord() {
         isStop = false;
         int response;
 
         do {
-            menuDisplay();              // display main menu
+            menuDisplay(); // display main menu
             response = input.nextInt(); // get users's response
-            menuOption(response);       // call this method and move onto the next menu based on their selection
+            menuOption(response); // call this method and move onto the next menu based on their selection
         } while (!isStop);
     }
 
     /*
      * EFFECTS: Based on users' response, this code executes different actions:
-     *              - case 1: add an exercise
-     *              - case 2: remove a specific exercise
-     *              - case 3: update a log (in case when users enter the wrong info)
-     *              - case 4: filter logs by muscle type or date as users want
-     *              - case 5: display all logs
-     *              - case 6: terminate this application
-     *              - otherwise, display an error message
+     * - case 1: add an exercise
+     * - case 2: remove a specific exercise
+     * - case 3: update a log (in case when users enter the wrong info)
+     * - case 4: filter logs by muscle type or date as users want
+     * - case 5: display all logs
+     * - case 6: terminate this application
+     * - otherwise, display an error message
      */
     private void menuOption(int response) {
         switch (response) {
@@ -93,14 +94,14 @@ public class FitnessRecordApp {
 
     /*
      * EFFECTS: display all logs in the nicely formatting way
-     *              - date
-     *              - exercise name
-     *              - muscle type
-     *              - weight lifted
-     *              - the number of sets
-     *              - the number of repetitions
+     * - date
+     * - exercise name
+     * - muscle type
+     * - weight lifted
+     * - the number of sets
+     * - the number of repetitions
      * 
-     *          otherwise, display a message that logs is empty
+     * otherwise, display a message that logs is empty
      */
     private void viewAllLogs(List<Log> logs) {
         for (Log log : logs) {
@@ -121,10 +122,11 @@ public class FitnessRecordApp {
     }
 
     /*
-     * EFFECTS: prompt users to enter either muscle type (1) or date (2) to filter logs by.
-     *          then, get a new muscle type or date based on the selection.
-     *          
-     *          call filteredLog method to get a new filtered list and display it
+     * EFFECTS: prompt users to enter either muscle type (1) or date (2) to filter
+     * logs by.
+     * then, get a new muscle type or date based on the selection.
+     * 
+     * call filteredLog method to get a new filtered list and display it
      */
     private void filterWorkoutLog() {
         boolean isValid = false;
@@ -145,11 +147,11 @@ public class FitnessRecordApp {
 
         } while (!isValid); // determine if users' response is valid.
 
-        if (responseFilter == 1) {          // muscle type
+        if (responseFilter == 1) { // muscle type
             type = promptMuscleType();
         }
 
-        if (responseFilter == 2) {          // date
+        if (responseFilter == 2) { // date
             getDateStringFromUser();
         }
 
@@ -158,7 +160,7 @@ public class FitnessRecordApp {
 
     /*
      * EFFECTS: prompt users to enter an exercise name and date to update.
-     *          then display update options and update based on the users' selection
+     * then display update options and update based on the users' selection
      */
     private void updateLog() {
         Log tempLog = new Log();
@@ -166,18 +168,18 @@ public class FitnessRecordApp {
         System.out.print("What kind of the name of exercise the log has would you like to update: ");
         String tempName = input.nextLine(); // get the exercise name to find and update
 
-        getDateStringFromUser();            // get the date to find and update
+        getDateStringFromUser(); // get the date to find and update
 
         int index = tempLog.findMatchedLog(tempName, date); // find the existing exercise in the log
 
         if (index == -1) {
             System.out.println("\nThere is no matching log in our database!!!");
         } else {
-            updateOptions();                                // display update options
+            updateOptions(); // display update options
             System.out.print("\nPlease enter the number 1 to 6: ");
             int response = input.nextInt();
             input.nextLine();
-            menuUpdate(response, index);                    // update based on the selection
+            menuUpdate(response, index); // update based on the selection
         }
 
     }
@@ -194,29 +196,30 @@ public class FitnessRecordApp {
 
     /*
      * EFFECTS: get the exercise name and the date to find and remove.
-     *          then, remove it and print the removed log
+     * then, remove it and print the removed log
      */
     private void removeExercise() {
         System.out.println("---------Remove an exercise into our log---------");
         input.nextLine(); // Clear the leftover newline
         System.out.print("Enter the name of the exercise to remove: ");
-        exerciseName = input.nextLine().trim();         // get the exercise name
+        exerciseName = input.nextLine().trim(); // get the exercise name
 
-        getDateStringFromUser();                        // get the date
+        getDateStringFromUser(); // get the date
 
         Log removedLog = new Log().removeLogExercises(exerciseName, date); // save the removed log
 
         if (removedLog == null) {
             System.out.println("\nNo matching workout in our log!");
         } else {
-            System.out.println("\n" + removedLog + " is deleted!!!!");
+            System.out.println("\n" + removedLog.getExercise().getExerciseName() + " on " + removedLog.getDate()
+                    + " is deleted!!!!");
         }
     }
 
     /*
      * EFFECTS: add a new exercise into the log list by creating Exercise object.
-     *          and create a log to put Exercise object and date together.
-     *          then, the log is saved into the static list in Log class
+     * and create a log to put Exercise object and date together.
+     * then, the log is saved into the static list in Log class
      */
     private void addExercise() {
         System.out.println("---------Add an exercise into our log---------");
@@ -224,9 +227,9 @@ public class FitnessRecordApp {
         getUserInputs();
         Exercise exercise = new Exercise(exerciseName, type, weightLifted, numSets, numReps);
         Log log = new Log(exercise, date);
-        log.addLogToExercisesList();            // add a log into the static list in Log class
+        log.addLogToExercisesList(); // add a log into the static list in Log class
 
-        logs = log.getAllExercisesLog();        // connect a list here to the static list in Log class
+        logs = log.getAllExercisesLog(); // connect a list here to the static list in Log class
 
         System.out.println("\n--------------Successfully added!-------------\n");
     }
@@ -254,7 +257,7 @@ public class FitnessRecordApp {
 
     /*
      * EFFECTS: get date in the specific format (yyyy/mm/dd).
-     *          this method determines if the date is in the right format
+     * this method determines if the date is in the right format
      */
     private void getDateStringFromUser() {
         boolean isValid = true;
@@ -296,7 +299,7 @@ public class FitnessRecordApp {
 
     /*
      * EFFECTS: return ture if the date is in the right format (yyyy/mm/dd).
-     *          otherwise, return false.
+     * otherwise, return false.
      */
     private boolean isValidDateFormat(String date) {
 
