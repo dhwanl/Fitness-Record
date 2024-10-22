@@ -105,6 +105,15 @@ public class Log implements Writable{
     }
 
     /*
+     * REQUIRES: date in format (yyyy/mm/dd)
+     * MODIFIES: this
+     * EFFECTS: update the date
+     */
+    public void updateDate(String date) {
+        this.date = date;
+    }
+
+    /*
      * REQUIRES: response == 1 || response == 2;
      *           date must be in the format (yyyy/mm/dd)
      * EFFECTS: when response = 1, create a new list filtered by a specific muscle type
