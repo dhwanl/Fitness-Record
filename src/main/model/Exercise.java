@@ -1,7 +1,11 @@
 package model;
 
+import org.json.JSONObject;
+
+import persistence.Writable;
+
 // Specify the exercise type, weight lifted, and number of sets and reps, as well as users can add and remove exercises
-public class Exercise {
+public class Exercise implements Writable{
     private String exerciseName;    // the type of exercise
     private double weightLifted;    // track the weight lifted in killogram
     private int numSets;            // track the number of sets of the exercise
@@ -84,6 +88,12 @@ public class Exercise {
 
     public void setMuscleType(Muscles muscleType) {
         this.muscleType = muscleType;
+    }
+
+    @Override
+    public JSONObject toJson() {
+        // stub
+        return null;
     }
 
 }

@@ -4,6 +4,10 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONObject;
+
+import persistence.Writable;
+
 /*
  * Stores information about exercises and the date performed by users, as well as the exercise details.
  * 
@@ -12,7 +16,7 @@ import java.util.List;
  *       finding a specific log by exercise name and date.
  *       updating exercise details
  */
-public class Log {
+public class Log implements Writable{
     private static List<Log> exercises = new ArrayList<Log>();  // store all exercises users did
 
     private Exercise exercise;     // data type Exercise variable
@@ -194,5 +198,11 @@ public class Log {
     
     public String getDate() {
         return date;
+    }
+
+    @Override
+    public JSONObject toJson() {
+        // stub
+        return null;
     }
 }
