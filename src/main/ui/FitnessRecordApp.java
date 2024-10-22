@@ -267,8 +267,12 @@ public class FitnessRecordApp {
                 System.out.println("Unfortunately, you entered the date in the wrong format");
                 System.out.println("Please try this again");
             }
-            System.out.print("-Please Enter the date of your workout (yyyy/mm/dd): ");
+            System.out.print("Please enter a today's date in the format (yyyymmdddd)\nEnter a year: ");
             date = input.next();
+            System.out.print("Enter a month: ");
+            date += "/" + input.next();
+            System.out.print("Enter today's date: ");
+            date += "/" + input.next();
             isValid = isValidDateFormat(date);
 
         } while (!isValid);
@@ -282,16 +286,16 @@ public class FitnessRecordApp {
 
         input.nextLine(); // Clear the leftover newline
 
-        System.out.print("\n-What kind of workout would you like to register here: ");
+        System.out.print("\n- What kind of workout would you like to register here: ");
         exerciseName = input.nextLine();
 
-        System.out.print("\n-How much weight (in kg) did you lift or plan to lift: ");
+        System.out.print("\n- How much weight (in kg) did you lift or plan to lift: ");
         weightLifted = input.nextDouble();
 
-        System.out.print("\n-How many sets did you do or plan to do : ");
+        System.out.print("\n- How many sets did you do or plan to do : ");
         numSets = input.nextInt();
 
-        System.out.print("\n-How many reps per set: ");
+        System.out.print("\n- How many reps per set: ");
         numReps = input.nextInt();
 
         type = promptMuscleType();
