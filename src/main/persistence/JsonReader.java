@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.json.JSONArray;
@@ -11,6 +13,7 @@ import org.json.JSONObject;
 
 import model.Exercise;
 import model.Log;
+import model.Muscles;
 
 // Referenced from JsonSerialization Demo
 // https://github.students.cs.ubc.ca/CPSC210/JsonSerializationDemo
@@ -25,8 +28,11 @@ public class JsonReader {
 
     // EFFECTS: reads log from file and return it;
     // throws IOException if an error occurs reading data from file
-    public Log read() throws IOException {
-        return null; // stub
+    public List<Log> read() throws IOException {
+        String jsonData = readFile(source);
+        JSONArray jsonObj = new JSONArray(jsonData);
+        
+        return parseLog(jsonObj);
     }
 
     // EFFECTS: reads log from file and returns it;
@@ -42,20 +48,34 @@ public class JsonReader {
     }
 
     // EFFECTS: parses log from JSON object and return it
-    private Log parseLog(JSONArray jsonArray) {
-        return null; // stub
+    private List<Log> parseLog(JSONArray jsonArray) {
+        List<Log> historyLogs = new ArrayList<Log>();
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject objLog = jsonArray.getJSONObject(i);
+            historyLogs.add(addExerciseToLog(objLog)); 
+        }
+
+        return historyLogs;
     }
 
     // MODIFIES: log
     // EFFECTS: parses logs from JSON object and adds them to log
-    private void addExercises(Log log, JSONObject jsonObject) {
-        // stub
-    }
+    private Log addExerciseToLog(JSONObject objLog) {
+        String date = objLog.getString("date");
 
-    // MODIFIES: log
-    // EFFECTS: parses exercise from JSON object and adds it to log
-    private void addExercise(Exercise ex, JSONObject jsonObject) {
-        // stub
-    }
+        JSONObject exerciseJson = objLog.getJSONObject("exercise");
 
+        String exerciseName = exerciseJson.getString("exercise name");
+        Muscles muscleType = Muscles.valueOf(exerciseJson.getString("muscle Type"));
+        int weightLifted = exerciseJson.getInt("weight");
+        int numSets = exerciseJson.getInt("number of sets");
+        int numReps = exerciseJson.getInt("number of Repetitions");
+
+        Exercise newExercise = new Exercise(exerciseName, muscleType, weightLifted, numSets, numReps);
+
+        Log newLog = new Log(newExercise, date);
+
+        return newLog;
+    }
 }
