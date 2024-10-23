@@ -22,5 +22,5 @@
 - As a user, I want to be able to specify the exercise type, weight lifted, and number of sets and reps
 - As a user, I want to be able to update log information to accurately correct if a user put the wrong value
 - As a user, I want to be able to filter my workout log by date or exercise type to analyze my progrss more easily
-- As a user, I want to be able to save my workout log to file (if I so choose)
-- As a user, I want to be able to load my workout log from file (if I so choose)
+- As a user, I want to be able to save my workout log to a file and name the file
+- As a user, I want to be able to load my workout log from a file by entering the file name
