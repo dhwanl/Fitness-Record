@@ -14,7 +14,7 @@ public class LogTest {
 
     @BeforeEach
     public void runBefore() {
-        exercise = new Exercise("Bench press", Muscles.CHEST, 60.0, 3, 10);
+        exercise = new Exercise("Bench press", Muscles.CHEST, 60, 3, 10);
         date = "2024/10/08";
         log = new Log(exercise, date);
     }
@@ -42,7 +42,7 @@ public class LogTest {
         assertEquals(3, logs.get(0).getExercise().getNumSets());
         assertEquals(10, logs.get(0).getExercise().getNumReps());
         
-        log = new Log(new Exercise("Squat", Muscles.LEGS, 70.0, 4, 10), "2024/10/20");
+        log = new Log(new Exercise("Squat", Muscles.LEGS, 70, 4, 10), "2024/10/20");
         log.addLogToExercisesList();
         assertEquals(2, logs.size());
         assertEquals("2024/10/20", logs.get(1).getDate());
@@ -79,7 +79,7 @@ public class LogTest {
     @Test
     public void testFindMatchedLog() {
         log.addLogToExercisesList();
-        log = new Log(new Exercise("Chest flies", Muscles.CHEST, 60.0, 3, 10), date);
+        log = new Log(new Exercise("Chest flies", Muscles.CHEST, 60, 3, 10), date);
         log.addLogToExercisesList();
         
         assertEquals(0, log.findMatchedLog("Bench press", "2024/10/08"));
@@ -91,8 +91,8 @@ public class LogTest {
 
     @Test
     public void testFilteredLog() {
-        Log log4 = new Log(new Exercise("Lat pulldown", Muscles.BACK, 60.0, 3, 10), date);
-        Log log5 = new Log(new Exercise("Barbell row", Muscles.BACK, 60.0, 3, 10), date);
+        Log log4 = new Log(new Exercise("Lat pulldown", Muscles.BACK, 60, 3, 10), date);
+        Log log5 = new Log(new Exercise("Barbell row", Muscles.BACK, 60, 3, 10), date);
         log4.addLogToExercisesList();
         log5.addLogToExercisesList();
 
@@ -108,11 +108,11 @@ public class LogTest {
     @Test
     public void testFilteredExercisesByType() {
 
-        Log log1 = new Log(new Exercise("Incline Bench press", Muscles.CHEST, 60.0, 3, 10), date);
-        Log log2 = new Log(new Exercise("Chest flies", Muscles.CHEST, 60.0, 3, 10), date);
-        Log log3 = new Log(new Exercise("Dumbbell press", Muscles.CHEST, 60.0, 3, 10), date);
-        Log log4 = new Log(new Exercise("Lat pulldown", Muscles.BACK, 60.0, 3, 10), date);
-        Log log5 = new Log(new Exercise("Barbell row", Muscles.BACK, 60.0, 3, 10), date);
+        Log log1 = new Log(new Exercise("Incline Bench press", Muscles.CHEST, 60, 3, 10), date);
+        Log log2 = new Log(new Exercise("Chest flies", Muscles.CHEST, 60, 3, 10), date);
+        Log log3 = new Log(new Exercise("Dumbbell press", Muscles.CHEST, 60, 3, 10), date);
+        Log log4 = new Log(new Exercise("Lat pulldown", Muscles.BACK, 60, 3, 10), date);
+        Log log5 = new Log(new Exercise("Barbell row", Muscles.BACK, 60, 3, 10), date);
 
         log.addLogToExercisesList();
         log1.addLogToExercisesList();
@@ -135,13 +135,13 @@ public class LogTest {
     @Test
     public void testFilteredExercisesByDate() {
 
-        Log log1 = new Log(new Exercise("Incline Bench press", Muscles.CHEST, 60.0, 3, 10), date);
-        Log log2 = new Log(new Exercise("Chest flies", Muscles.CHEST, 60.0, 3, 10), date);
+        Log log1 = new Log(new Exercise("Incline Bench press", Muscles.CHEST, 60, 3, 10), date);
+        Log log2 = new Log(new Exercise("Chest flies", Muscles.CHEST, 60, 3, 10), date);
 
         date = "2024/10/20";
-        Log log3 = new Log(new Exercise("Dumbbell press", Muscles.CHEST, 60.0, 3, 10), date);
-        Log log4 = new Log(new Exercise("Lat pulldown", Muscles.BACK, 60.0, 3, 10), date);
-        Log log5 = new Log(new Exercise("Barbell row", Muscles.BACK, 60.0, 3, 10), date);
+        Log log3 = new Log(new Exercise("Dumbbell press", Muscles.CHEST, 60, 3, 10), date);
+        Log log4 = new Log(new Exercise("Lat pulldown", Muscles.BACK, 60, 3, 10), date);
+        Log log5 = new Log(new Exercise("Barbell row", Muscles.BACK, 60, 3, 10), date);
 
         log.addLogToExercisesList();
         log1.addLogToExercisesList();
@@ -167,7 +167,7 @@ public class LogTest {
         List<Log> logs = log.getAllExercisesLog();
         assertEquals(60.0, logs.get(0).getExercise().getWeightLifted());
 
-        logs.get(0).updateWeight(0.0);
+        logs.get(0).updateWeight(0);
         assertEquals(0.0, logs.get(0).getExercise().getWeightLifted());
 
         logs.get(0).updateName("Bench");
@@ -183,7 +183,7 @@ public class LogTest {
         logs.get(0).updateSets(10);
         assertEquals(10, logs.get(0).getExercise().getNumSets());
 
-        logs.get(0).updateWeight(200.0);
+        logs.get(0).updateWeight(200);
         assertEquals(200.0, logs.get(0).getExercise().getWeightLifted());
 
         logs.clear();
