@@ -1,0 +1,32 @@
+[
+    {
+        "date": "2024/10/22",
+        "exercise": {
+            "muscle Type": "CHEST",
+            "number of sets": 3,
+            "number of Repetitions": 12,
+            "exercise name": "Bench press",
+            "weight": 100
+        }
+    },
+    {
+        "date": "2024/10/20",
+        "exercise": {
+            "muscle Type": "SHOULDERS",
+            "number of sets": 4,
+            "number of Repetitions": 11,
+            "exercise name": "Shoulder press",
+            "weight": 50
+        }
+    },
+    {
+        "date": "2024/10/23",
+        "exercise": {
+            "muscle Type": "LEGS",
+            "number of sets": 3,
+            "number of Repetitions": 10,
+            "exercise name": "Squat",
+            "weight": 90
+        }
+    }
+]
