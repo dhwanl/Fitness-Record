@@ -5,9 +5,9 @@ import org.json.JSONObject;
 import persistence.Writable;
 
 // Specify the exercise type, weight lifted, and number of sets and reps, as well as users can add and remove exercises
-public class Exercise implements Writable{
+public class Exercise implements Writable {
     private String exerciseName;    // the type of exercise
-    private double weightLifted;    // track the weight lifted in killogram
+    private int weightLifted;    // track the weight lifted in killogram
     private int numSets;            // track the number of sets of the exercise
     private int numReps;            // track the number of repetition of the exercise
     private Muscles muscleType;     // the type of muscle users use with exercise
@@ -20,7 +20,7 @@ public class Exercise implements Writable{
     public Exercise(String exerciseName, Muscles muscleType) {
         this.exerciseName = capitalizationForFirstLetter(exerciseName);
         this.muscleType = muscleType;
-        this.weightLifted = 0.0;
+        this.weightLifted = 0;
         this.numSets = 0;
         this.numReps = 0;
     }
@@ -30,7 +30,7 @@ public class Exercise implements Writable{
      * EFFECTS: name of the type of exercise is set to exerciseName.
      *          weightLifted, numSets, and numReps are set by the given value
      */
-    public Exercise(String exerciseName, Muscles muscleType, double weightLifted, int numSets, int numReps) {
+    public Exercise(String exerciseName, Muscles muscleType, int weightLifted, int numSets, int numReps) {
         this.exerciseName = capitalizationForFirstLetter(exerciseName);
         this.muscleType = muscleType;
         this.weightLifted = weightLifted;
@@ -53,7 +53,7 @@ public class Exercise implements Writable{
         return this.exerciseName;
     }
 
-    public double getWeightLifted() {
+    public int getWeightLifted() {
         return this.weightLifted;
     }
 
@@ -74,7 +74,7 @@ public class Exercise implements Writable{
         this.exerciseName = capitalizationForFirstLetter(exerciseName);
     }
 
-    public void setWeightLifted(double weight) {
+    public void setWeightLifted(int weight) {
         this.weightLifted = weight;
     }
 
@@ -92,8 +92,14 @@ public class Exercise implements Writable{
 
     @Override
     public JSONObject toJson() {
-        // stub
-        return null;
+        JSONObject json = new JSONObject();
+        json.put("exercise name", this.exerciseName);
+        json.put("muscle Type", this.muscleType);
+        json.put("weight", this.weightLifted);
+        json.put("number of sets", this.numSets);
+        json.put("number of Repetitions", this.numReps);
+        
+        return json;
     }
 
 }
