@@ -16,7 +16,7 @@ import persistence.Writable;
  *       finding a specific log by exercise name and date.
  *       updating exercise details
  */
-public class Log implements Writable{
+public class Log implements Writable {
     private static List<Log> exercises = new ArrayList<Log>();  // store all exercises users did
 
     private Exercise exercise;     // data type Exercise variable
@@ -65,7 +65,7 @@ public class Log implements Writable{
      * MODIFIES: this
      * EFFECTS: update weight lifted
      */
-    public void updateWeight(double newWeight) {
+    public void updateWeight(int newWeight) {
         this.getExercise().setWeightLifted(newWeight);
     }
 
@@ -104,14 +104,14 @@ public class Log implements Writable{
         this.getExercise().setNumReps(newReps);
     }
 
-    /*
-     * REQUIRES: date in format (yyyy/mm/dd)
-     * MODIFIES: this
-     * EFFECTS: update the date
-     */
-    public void updateDate(String date) {
-        this.date = date;
-    }
+    // /*
+    //  * REQUIRES: date in format (yyyy/mm/dd)
+    //  * MODIFIES: this
+    //  * EFFECTS: update the date
+    //  */
+    // public void updateDate(String date) {
+    //     this.date = date;
+    // }
 
     /*
      * REQUIRES: response == 1 || response == 2;
@@ -211,7 +211,20 @@ public class Log implements Writable{
 
     @Override
     public JSONObject toJson() {
-        // stub
-        return null;
+        JSONObject json = new JSONObject();
+        
+        if (this.exercise != null) {
+            json.put("exercise", this.exercise.toJson());
+        } else {
+            json.put("exercise", JSONObject.NULL);
+        }
+        
+        if (this.date != null) {
+            json.put("date", this.date);
+        } else {
+            json.put("date", JSONObject.NULL);
+        }
+
+        return json;
     }
 }
