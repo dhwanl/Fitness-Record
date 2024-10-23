@@ -1,12 +1,18 @@
 package ui;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.json.JSONArray;
+
 import model.Exercise;
 import model.Log;
 import model.Muscles;
+import persistence.JsonReader;
+import persistence.JsonWriter;
 
 /*
  * Fitness tracker application
@@ -15,13 +21,17 @@ import model.Muscles;
  * and track their workout progress over time.
  */
 public class FitnessRecordApp {
+    private static final String JSON_STORE = "./data/logFile.json";
+    private JsonWriter jsonWriter;
+    private JsonReader jsonReader;
+
     private List<Log> logs;
 
     private Scanner input;
     private String exerciseName;
     private Muscles type;
     private String date;
-    private double weightLifted;
+    private int weightLifted;
     private int numSets;
     private int numReps;
     boolean isStop;
@@ -35,6 +45,8 @@ public class FitnessRecordApp {
         input = new Scanner(System.in);
         logs = new ArrayList<Log>();
         greeting();
+        jsonWriter = new JsonWriter(JSON_STORE);
+        jsonReader = new JsonReader(JSON_STORE);
         runRecord();
     }
 
@@ -62,34 +74,33 @@ public class FitnessRecordApp {
      * - case 3: update a log (in case when users enter the wrong info)
      * - case 4: filter logs by muscle type or date as users want
      * - case 5: display all logs
-     * - case 6: terminate this application
+     * - case 6: save all logs to a file
+     * - case 7: load all logs from a file
+     * - case 8: terminate this application
      * - otherwise, display an error message
      */
     private void menuOption(int response) {
-        switch (response) {
-            case 1:
-                addExercise();
-                break;
-            case 2:
-                removeExercise();
-                break;
-            case 3:
-                updateLog();
-                break;
-            case 4:
-                filterWorkoutLog();
-                break;
-            case 5:
-                viewAllLogs(logs);
-                break;
-            case 6:
-                isStop = true;
-                break;
-
-            default:
-                System.out.println("\nUnfortunately, the number you entered is not correct!");
-                break;
+        
+        if (response == 1) {
+            addExercise();
+        } else if (response == 2) {
+            removeExercise();
+        } else if (response == 3) {
+            updateLog();
+        } else if (response == 4) {
+            filterWorkoutLog();
+        } else if (response == 5) {
+            viewAllLogs(logs);
+        } else if (response == 6) {
+            saveLogsToFile();
+        } else if (response == 7) {
+            loadLogsFromFile();
+        } else if (response == 8) {
+            isStop = true;
+        } else {
+            System.out.println("\nUnfortunately, the number you entered is not correct!");
         }
+        
     }
 
     /*
@@ -290,7 +301,7 @@ public class FitnessRecordApp {
         exerciseName = input.nextLine();
 
         System.out.print("\n- How much weight (in kg) did you lift or plan to lift: ");
-        weightLifted = input.nextDouble();
+        weightLifted = input.nextInt();
 
         System.out.print("\n- How many sets did you do or plan to do : ");
         numSets = input.nextInt();
@@ -392,7 +403,7 @@ public class FitnessRecordApp {
             logs.get(index).updateMuscleType(type);
         } else if (response == 3) {
             System.out.print("\nHow much weight (in kg) is it: ");
-            weightLifted = input.nextDouble();
+            weightLifted = input.nextInt();
             logs.get(index).updateWeight(weightLifted);
         } else if (response == 4) {
             System.out.print("\nHow many sets is it : ");
@@ -408,6 +419,48 @@ public class FitnessRecordApp {
 
     }
 
+    private void saveLogsToFile() {
+        try {
+            JSONArray jsonArray = new JSONArray();
+            
+            jsonWriter.open();
+            
+            List<Log> allLogs = new Log().getAllExercisesLog();
+
+            if (allLogs.isEmpty()) {
+                System.out.println("No logs to save!");
+            } else {
+                for (Log log: allLogs) {
+                    jsonArray.put(log.toJson());
+                }
+            }
+
+            jsonWriter.write(jsonArray);
+            jsonWriter.close();
+            System.out.println("******Your Log successfully saved: " + JSON_STORE + " ******");
+        } catch (FileNotFoundException e) {
+            System.out.println("Unable to write to file: " + JSON_STORE);
+        }
+    }
+
+    private void loadLogsFromFile() {
+        try {
+            logs.clear();
+            List<Log> newLogs = jsonReader.read();
+            
+            for (Log log: newLogs) {
+                log.addLogToExercisesList();
+            }
+
+            logs = new Log().getAllExercisesLog();
+            System.out.println("Loaded all exercise logs from " + JSON_STORE);
+
+        } catch (IOException e) {
+            System.out.println("Unable to read from file: " + JSON_STORE);
+        }
+    }
+
+
     /*
      * EFFECTS: display main menu on the console
      */
@@ -420,7 +473,9 @@ public class FitnessRecordApp {
         System.out.println("3. Update the log");
         System.out.println("4. Filter workout log");
         System.out.println("5. View all exercises you added");
-        System.out.println("6. Exit");
-        System.out.print("Please enter a number between 1 and 6: ");
+        System.out.println("6. Save logs to file");
+        System.out.println("7. Load logs from file");
+        System.out.println("8. Exit");
+        System.out.print("Please enter a number between 1 and 8: ");
     }
 }
