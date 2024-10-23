@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
 import model.Exercise;
@@ -46,6 +47,15 @@ public class JsonWriterTest extends JsonTest{
         } catch (IOException e) {
             fail("Exception should not have been thrown");
         }
+    }
+    
+    @Test
+    public void testWriterWithNullExerciseAndDate() {
+        Log log = new Log();
+        JSONObject json = log.toJson();
+
+        assertEquals(JSONObject.NULL, json.get("exercise"));
+        assertEquals(JSONObject.NULL, json.get("date"));
     }
 
     @Test
