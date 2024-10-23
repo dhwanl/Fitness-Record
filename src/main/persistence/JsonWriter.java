@@ -3,15 +3,16 @@ package persistence;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
-import model.Log;
-
 import java.io.*;
+
+import org.json.JSONArray;
 
 // Referenced from JsonSerialization Demo
 // https://github.students.cs.ubc.ca/CPSC210/JsonSerializationDemo
 
 // Represents a writer that write all logs into JSON file
 public class JsonWriter {
+    private static final int TAB = 4;
     private PrintWriter writer;
     private String directory;
 
@@ -29,8 +30,10 @@ public class JsonWriter {
 
     // MODIFIES: this
     // EFFECTS: writes JSON representation of logs to file
-    public void write(Log log) {
-        // stub
+    public void write(JSONArray jsonArrLog) {
+        // JSONArray jsonArrLog = new JSONArray();
+        // jsonArrLog.put(log.toJson());
+        saveToFile(jsonArrLog.toString(TAB));
     }
 
     // MODIFIES: this
