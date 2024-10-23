@@ -21,7 +21,7 @@ import persistence.JsonWriter;
  * and track their workout progress over time.
  */
 public class FitnessRecordApp {
-    private static final String JSON_STORE = "./data/logFile.json";
+    private static final String JSON_STORE = "./data/";
     private JsonWriter jsonWriter;
     private JsonReader jsonReader;
 
@@ -45,8 +45,6 @@ public class FitnessRecordApp {
         input = new Scanner(System.in);
         logs = new ArrayList<Log>();
         greeting();
-        jsonWriter = new JsonWriter(JSON_STORE);
-        jsonReader = new JsonReader(JSON_STORE);
         runRecord();
     }
 
@@ -115,12 +113,14 @@ public class FitnessRecordApp {
      * otherwise, display a message that logs is empty
      */
     private void viewAllLogs(List<Log> logs) {
+        System.out.println("-----------------All Logs--------------------");
+
         for (Log log : logs) {
             Exercise ex = log.getExercise();
             System.out.printf("\n-Date: %2s%n", log.getDate());
             System.out.printf("Name of Exercise: %2s%n", ex.getExerciseName());
             System.out.printf("Type of muscles: %2s%n", ex.getMuscleType().toString());
-            System.out.printf("Weight you lifted: %.2f%n", ex.getWeightLifted());
+            System.out.printf("Weight you lifted: %2d%n", ex.getWeightLifted());
             System.out.printf("Number of sets: %2d%n", ex.getNumSets());
             System.out.printf("Number of reps: %2d%n", ex.getNumReps());
         }
@@ -175,8 +175,9 @@ public class FitnessRecordApp {
      */
     private void updateLog() {
         Log tempLog = new Log();
+        viewAllLogs(tempLog.getAllExercisesLog());
         input.nextLine(); // Clear the leftover newline
-        System.out.print("What kind of the name of exercise the log has would you like to update: ");
+        System.out.print("What is the name of exercise you would like to update: ");
         String tempName = input.nextLine(); // get the exercise name to find and update
 
         getDateStringFromUser(); // get the date to find and update
@@ -420,6 +421,13 @@ public class FitnessRecordApp {
     }
 
     private void saveLogsToFile() {
+        input.nextLine(); // Clear the leftover newline
+        System.out.print("-\n Please enter a file name you would like to create: ");
+        String fileName = input.nextLine();
+        fileName += ".json";
+
+        jsonWriter = new JsonWriter(JSON_STORE + fileName);
+
         try {
             JSONArray jsonArray = new JSONArray();
             
@@ -437,13 +445,19 @@ public class FitnessRecordApp {
 
             jsonWriter.write(jsonArray);
             jsonWriter.close();
-            System.out.println("******Your Log successfully saved: " + JSON_STORE + " ******");
+            System.out.println("******Your Log successfully saved: " + JSON_STORE + fileName + " ******");
         } catch (FileNotFoundException e) {
-            System.out.println("Unable to write to file: " + JSON_STORE);
+            System.out.println("Unable to write to file: " + JSON_STORE + fileName);
         }
     }
 
     private void loadLogsFromFile() {
+        input.nextLine(); // Clear the leftover newline
+        System.out.print("\n- Please enter a file name you would like to create: ");
+        String fileName = input.nextLine();
+        fileName += ".json";
+
+        jsonReader = new JsonReader(JSON_STORE + fileName);
         try {
             logs.clear();
             List<Log> newLogs = jsonReader.read();
@@ -453,10 +467,10 @@ public class FitnessRecordApp {
             }
 
             logs = new Log().getAllExercisesLog();
-            System.out.println("Loaded all exercise logs from " + JSON_STORE);
+            System.out.println("******Your Log sucessfully loaded " + JSON_STORE + fileName + " ******");
 
         } catch (IOException e) {
-            System.out.println("Unable to read from file: " + JSON_STORE);
+            System.out.println("Unable to read from file: " + JSON_STORE + fileName);
         }
     }
 
