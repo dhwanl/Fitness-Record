@@ -1,5 +1,6 @@
 package ui;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -436,7 +437,7 @@ public class FitnessRecordApp {
             List<Log> allLogs = new Log().getAllExercisesLog();
 
             if (allLogs.isEmpty()) {
-                System.out.println("No logs to save!");
+                System.out.println("\nNo logs to save!");
             } else {
                 for (Log log: allLogs) {
                     jsonArray.put(log.toJson());
@@ -445,15 +446,16 @@ public class FitnessRecordApp {
 
             jsonWriter.write(jsonArray);
             jsonWriter.close();
-            System.out.println("******Your Log successfully saved: " + JSON_STORE + fileName + " ******");
+            System.out.println("\n******Your Log successfully saved: " + JSON_STORE + fileName + " ******");
         } catch (FileNotFoundException e) {
-            System.out.println("Unable to write to file: " + JSON_STORE + fileName);
+            System.out.println("\nUnable to write to file: " + JSON_STORE + fileName);
         }
     }
 
     private void loadLogsFromFile() {
+        displayFileList();
         input.nextLine(); // Clear the leftover newline
-        System.out.print("\n- Please enter a file name you would like to create: ");
+        System.out.print("- Please enter a file name you would like to load without \".json\": ");
         String fileName = input.nextLine();
         fileName += ".json";
 
@@ -467,19 +469,34 @@ public class FitnessRecordApp {
             }
 
             logs = new Log().getAllExercisesLog();
-            System.out.println("******Your Log sucessfully loaded " + JSON_STORE + fileName + " ******");
+            System.out.println("\n******Your Log sucessfully loaded " + JSON_STORE + fileName + " ******");
 
         } catch (IOException e) {
-            System.out.println("Unable to read from file: " + JSON_STORE + fileName);
+            System.out.println("\nUnable to read from file: " + JSON_STORE + fileName);
         }
     }
 
+    private void displayFileList() {
+        File f = new File("./data");
+        String[] files = f.list();
 
+        if (files.length == 0) {
+            System.out.println("\n************No file in our database************");
+        } else {
+            
+            System.out.println("\n**********The list of files in our database!!!!!***********");
+            for(String file: files) {
+                System.out.println(file);
+            }
+    
+            System.out.println("************************************************************");
+        }
+    }
     /*
      * EFFECTS: display main menu on the console
      */
     private void menuDisplay() {
-        System.out.println("--------------------------------------");
+        System.out.println("\n--------------------------------------");
         System.out.println("|         Fitness Tracker Menu       |");
         System.out.println("--------------------------------------");
         System.out.println("1. Add an exercies");
