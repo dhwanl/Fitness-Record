@@ -2,10 +2,12 @@ package persistence;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.junit.Test;
+import org.json.JSONArray;
+import org.junit.jupiter.api.Test;
 
 import model.Exercise;
 import model.Log;
@@ -15,37 +17,39 @@ import model.Muscles;
 // https://github.students.cs.ubc.ca/CPSC210/JsonSerializationDemo
 public class JsonWriterTest extends JsonTest{
     @Test
-    void testWriterInvalidFile() {
+    public void testWriterInvalidFile() {
+        
         try {
-            Log log = new Log();
             JsonWriter writer = new JsonWriter("./data/my\0illegal:fileName.json");
             writer.open();
             fail("IOException was expected");
         } catch (IOException e) {
-            // pass
+            File file = new File("./data/my\\0illegal:fileName.json");
+            assertFalse(file.exists());
         }
     }
 
     @Test
-    void testWriterEmptyLog() {
+    public void testWriterEmptyLog() {
         try {
-            Log log = new Log();
             JsonWriter writer = new JsonWriter("./data/testReaderEmptyLog.json");
+            
+            JSONArray jsonArray = new JSONArray();
+
             writer.open();
-            writer.write(log);
+            writer.write(jsonArray);
             writer.close();
 
             JsonReader reader = new JsonReader("./data/testReaderEmptyLog.json");
-            log = reader.read();
-            assertNull(log.getDate());
-            assertEquals(0, log.getAllExercisesLog().size());
+            List<Log> logs = reader.read();
+            assertTrue(logs.isEmpty());
         } catch (IOException e) {
             fail("Exception should not have been thrown");
         }
     }
 
     @Test
-    void testWriterGenral() {
+    public void testWriterGenral() {
         try{
             Exercise exercise1 = new Exercise( "Bench press", Muscles.CHEST, 100, 3, 12);
             Exercise exercise2 = new Exercise( "Shoulder press", Muscles.SHOULDERS, 50, 4, 11);
@@ -60,16 +64,22 @@ public class JsonWriterTest extends JsonTest{
 
             JsonWriter writer = new JsonWriter("./data/testWriterGeneral.json");
             writer.open();
-            writer.write(log);
+            List<Log> logs = log.getAllExercisesLog();
+            JSONArray jsonArray = new JSONArray();
+            
+            for(Log l: logs) {
+                jsonArray.put(l.toJson());
+            }
+
+            writer.write(jsonArray);
             writer.close();
 
             JsonReader reader = new JsonReader("./data/testWriterGeneral.json");
-            log = reader.read();
-            List<Log> logs = log.getAllExercisesLog();
-            assertEquals(3, logs.size());
-            checkExercise(logs.get(0), "Bench press", Muscles.CHEST, 100, 3, 12);
-            checkExercise(logs.get(1), "Shoulder press", Muscles.SHOULDERS, 50, 4, 11);
-            checkExercise(logs.get(2), "Squat", Muscles.LEGS, 90, 3, 10);
+            List<Log> logs2 = reader.read();
+            assertEquals(3, logs2.size());
+            checkExercise(logs2.get(0), "Bench press", Muscles.CHEST, 100, 3, 12);
+            checkExercise(logs2.get(1), "Shoulder press", Muscles.SHOULDERS, 50, 4, 11);
+            checkExercise(logs2.get(2), "Squat", Muscles.LEGS, 90, 3, 10);
         } catch (IOException e) {
             fail("Exception should not have been thrown");
         }
