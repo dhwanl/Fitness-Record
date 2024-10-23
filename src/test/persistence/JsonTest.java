@@ -9,7 +9,8 @@ import model.Muscles;
 // Referenced from JsonSerialization Demo
 // https://github.students.cs.ubc.ca/CPSC210/JsonSerializationDemo
 public class JsonTest {
-    protected void checkExercise(Log log, String exerciseName, Muscles muscleType, int weightLifted, int numSets, int numReps) {
+    protected void checkExercise(Log log, String exerciseName, Muscles muscleType, 
+                                            int weightLifted, int numSets, int numReps) {
         Exercise temp = log.getExercise();
         
         assertEquals(temp.getExerciseName(), exerciseName);
