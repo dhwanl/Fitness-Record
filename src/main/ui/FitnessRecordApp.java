@@ -421,6 +421,9 @@ public class FitnessRecordApp {
 
     }
 
+    // EFFECTS: success message with the file path if logs are saved
+    //          error message if unable to write to the file
+    //          inform the user if there are no logs to save
     private void saveLogsToFile() {
         input.nextLine(); // Clear the leftover newline
         System.out.print("-\n Please enter a file name you would like to create: ");
@@ -452,6 +455,8 @@ public class FitnessRecordApp {
         }
     }
 
+    // EFFECTS: Success message with the file path if logs are loaded
+    //          otherwise, print error message if unable to read from the file
     private void loadLogsFromFile() {
         displayFileList();
         input.nextLine(); // Clear the leftover newline
@@ -476,6 +481,7 @@ public class FitnessRecordApp {
         }
     }
 
+    // EFFECTS: display the list of the saved files
     private void displayFileList() {
         File f = new File("./data");
         String[] files = f.list();
@@ -485,13 +491,14 @@ public class FitnessRecordApp {
         } else {
             
             System.out.println("\n**********The list of files in our database!!!!!***********");
-            for(String file: files) {
+            for (String file: files) {
                 System.out.println(file);
             }
     
             System.out.println("************************************************************");
         }
     }
+    
     /*
      * EFFECTS: display main menu on the console
      */
