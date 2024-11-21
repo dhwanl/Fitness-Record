@@ -2,13 +2,20 @@ package ui;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+import org.json.JSONArray;
+
 import model.Exercise;
 import model.Log;
 import model.Muscles;
+import persistence.JsonReader;
+import persistence.JsonWriter;
 
 import java.util.List;
 
@@ -18,6 +25,7 @@ import java.util.List;
 public class FitnessRecordUI extends JFrame {
     private static final int WIDTH = 350;
     private static final int HEIGHT = 700;
+    private static final String JSON_STORE = "./data/";
     
     private JFrame parentFrame;
     private JComboBox<Muscles> muscleComboBox;
@@ -676,14 +684,94 @@ public class FitnessRecordUI extends JFrame {
      * EFFECTS: saves all logs to a file
      */
     private void saveLogsToFile() {
-        JOptionPane.showMessageDialog(this, "Add Exercise");
+        String fileName = JOptionPane.showInputDialog(this, "Enter file name to save logs:");
+        if (fileName == null) {
+            JOptionPane.showMessageDialog(this, "File save canceled");
+            return;
+        }
+
+        if (fileName != null && !fileName.trim().isEmpty()) {
+            if (!fileName.equals(fileName + ".json")) {
+                fileName += ".json";
+            }
+
+            JsonWriter jsonWriter = new JsonWriter(JSON_STORE + fileName);
+            
+            try {
+                JSONArray jsonArray = new JSONArray();
+                jsonWriter.open();
+                List<Log> logs = new Log().getAllExercisesLog();
+
+                if (logs.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "No logs to save!");
+                } else {
+                    for (Log log : logs) {
+                        jsonArray.put(log.toJson());
+                    }
+                }
+
+                jsonWriter.write(jsonArray);
+                jsonWriter.close();
+                JOptionPane.showMessageDialog(this, "Logs saved successfully to " + JSON_STORE + fileName);
+            } catch (FileNotFoundException e) {
+                JOptionPane.showMessageDialog(this, "Unable to write logs to the file: " + JSON_STORE + fileName);
+            }
+
+        } else if (fileName.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "file name cannot be empty!!!!!");
+        }
+    
     }
 
     /*
      * EFFECTS: loads logs from a file
      */
     private void loadLogsFromFile() {
-        JOptionPane.showMessageDialog(this, "Add Exercise");
+        File f = new File("./data");
+        String[] files = f.list();
+        displayFileList(files);
+
+        String fileName = JOptionPane.showInputDialog(this, "Enter file name to load logs:");
+        
+        if (fileName == null) {
+            JOptionPane.showMessageDialog(this, "File save canceled");
+            return;
+        }
+
+        if (fileName != null && !fileName.trim().isEmpty()) {
+            if (!fileName.equals(fileName + ".json")) {
+                fileName += ".json";
+            }
+
+            JsonReader jsonReader = new JsonReader(JSON_STORE + fileName);
+            
+            try {
+                new Log().getAllExercisesLog().clear();
+                List<Log> newLogs = jsonReader.read();
+
+                for (Log log : newLogs) {
+                    log.addLogToExercisesList();
+                }
+
+                JOptionPane.showMessageDialog(this, "Logs successfully loaded from " + JSON_STORE +fileName);
+            } catch(IOException e) {
+                JOptionPane.showMessageDialog(this, "Unable to read from file: " + JSON_STORE + fileName);
+            }
+
+        }
+    }
+
+    private void displayFileList(String[] files) {
+
+        if (files.length == 0) {
+            JOptionPane.showMessageDialog(this, "No files available to load!!!");
+        } else {
+            logDisplay.setText("");
+            logDisplay.append("\n**********The list of files in our database!!!!!***********\n");
+            for (String file : files) {
+                logDisplay.append(file + "\n");
+            }
+        }
     }
 
     /*
