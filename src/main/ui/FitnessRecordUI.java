@@ -329,22 +329,30 @@ public class FitnessRecordUI extends JFrame {
         updateExercisePanel.setBorder(new EmptyBorder(10, 5, 10, 5));
 
         JComboBox<String> updateFieldComboBox = new JComboBox<>(labels);
-
-        nameField = new JTextField(curExercise.getExerciseName());
-        muscleComboBox.setSelectedItem(curExercise.getMuscleType());
-        weightField = new JTextField(String.valueOf(curExercise.getWeightLifted()));
-        repsField = new JTextField(String.valueOf(curExercise.getNumReps()));
-        setsField = new JTextField(String.valueOf(curExercise.getNumSets()));
-        yearField = new JTextField(String.valueOf(log.getDate().split("/")[0]));
-        monthField = new JTextField(String.valueOf(log.getDate().split("/")[1]));
-        dayField = new JTextField(String.valueOf(log.getDate().split("/")[2]));
         
-        updateExercisePanelWithFields(updateExercisePanel, updateFieldComboBox);
+        updateExercisePanelWithFields(updateExercisePanel, updateFieldComboBox, curExercise, log);
 
         JPanel datePanel = createDatePanel();
         
         updateExercisePanel.add(datePanel);
 
+        updateFieldComboBoxEventHandler(updateFieldComboBox, dialog);
+
+        JPanel buttonPanel = new JPanel();
+        JButton updateButton = new JButton("update");
+        JButton cancelButton = createCancelButton(dialog);
+
+        updateEventHandler(updateButton, updateFieldComboBox, curExercise, log, dialog);
+
+        buttonPanel.add(updateButton);
+        buttonPanel.add(cancelButton);
+
+        dialog.add(updateExercisePanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
+    
+    private void updateFieldComboBoxEventHandler(JComboBox<String> updateFieldComboBox, JDialog dialog) {
         updateFieldComboBox.addActionListener(e -> {
             String selected = (String) updateFieldComboBox.getSelectedItem();
             nameField.setVisible("Exercise Name".equals(selected));
@@ -358,11 +366,10 @@ public class FitnessRecordUI extends JFrame {
             dayField.setVisible(isDate);
             dialog.pack();
         });
+    }
 
-        JPanel buttonPanel = new JPanel();
-        JButton updateButton = new JButton("update");
-        JButton cancelButton = createCancelButton(dialog);
-
+    private void updateEventHandler(JButton updateButton, JComboBox<String> updateFieldComboBox, 
+                                            Exercise curExercise, Log log, JDialog dialog) {
         updateButton.addActionListener(e -> {
             try {
                 String selected = (String) updateFieldComboBox.getSelectedItem();
@@ -386,13 +393,6 @@ public class FitnessRecordUI extends JFrame {
                 JOptionPane.showMessageDialog(dialog, "Invalid input. Please check your values!");
             }
         });
-        
-        buttonPanel.add(updateButton);
-        buttonPanel.add(cancelButton);
-
-        dialog.add(updateExercisePanel, BorderLayout.CENTER);
-        dialog.add(buttonPanel, BorderLayout.SOUTH);
-        dialog.setVisible(true);
     }
 
     private JPanel createDatePanel() {
@@ -404,7 +404,17 @@ public class FitnessRecordUI extends JFrame {
         return datePanel;
     }
 
-    private void updateExercisePanelWithFields(JPanel updateExercisePanel, JComboBox<String> updateFieldComboBox) {
+    private void updateExercisePanelWithFields(JPanel updateExercisePanel, JComboBox<String> updateFieldComboBox, 
+                                                    Exercise curExercise, Log log) {
+        nameField = new JTextField(curExercise.getExerciseName());
+        muscleComboBox.setSelectedItem(curExercise.getMuscleType());
+        weightField = new JTextField(String.valueOf(curExercise.getWeightLifted()));
+        repsField = new JTextField(String.valueOf(curExercise.getNumReps()));
+        setsField = new JTextField(String.valueOf(curExercise.getNumSets()));
+        yearField = new JTextField(String.valueOf(log.getDate().split("/")[0]));
+        monthField = new JTextField(String.valueOf(log.getDate().split("/")[1]));
+        dayField = new JTextField(String.valueOf(log.getDate().split("/")[2]));
+
         updateExercisePanel.add(new Label("Choose Fields to Update:"));
         updateExercisePanel.add(updateFieldComboBox);
         updateExercisePanel.add(muscleComboBox);
