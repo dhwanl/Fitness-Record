@@ -76,7 +76,8 @@ public class FitnessRecordUI extends JFrame {
         buttonPanel.add(createButton("Update the log", e -> updateLog()));
         buttonPanel.add(createButton("Filter workout log", e -> filteredLog()));
         buttonPanel.add(createButton("View all exercises you added", 
-                                            e -> displayAllLogs(new Log().getAllExercisesLog())));
+                                            e -> displayAllLogs(new Log().getAllExercisesLog(), 
+                                                    "Exercises in the list")));
         buttonPanel.add(createButton("Save logs to file", e -> saveLogsToFile()));
         buttonPanel.add(createButton("Load logs from file", e -> loadLogsFromFile()));
         buttonPanel.add(createButton("Exit", e -> System.exit(0)));
@@ -133,7 +134,7 @@ public class FitnessRecordUI extends JFrame {
     private JPanel exerciseButtonPanel(JDialog dialog, String purpose) {
         JPanel buttonPanel = new JPanel();
         JButton button = new JButton();
-        JButton cancelButton = createCancelButton(dialog);
+        JButton cancelButton = createCancelButton(dialog, "cancel");
 
 
         if (purpose.equals("addEx")) {
@@ -188,8 +189,8 @@ public class FitnessRecordUI extends JFrame {
      * MODIFIES: this
      * EFFECTS: creates and returns a cancel button that closes the window
      */
-    private JButton createCancelButton(JDialog dialog) {
-        JButton cancelButton = new JButton("Cancel");
+    private JButton createCancelButton(JDialog dialog, String title) {
+        JButton cancelButton = new JButton(title);
         cancelButton.addActionListener(e -> dialog.dispose());
         return cancelButton;
     }
@@ -406,15 +407,18 @@ public class FitnessRecordUI extends JFrame {
         
         updateExercisePanelWithFields(updateExercisePanel, updateFieldComboBox, curExercise, log);
 
-        JPanel datePanel = createDatePanel();
-        
+        JPanel datePanel = new JPanel(new GridLayout(1, 3));
+        datePanel.add(yearField);
+        datePanel.add(monthField);
+        datePanel.add(dayField);
+    
         updateExercisePanel.add(datePanel);
 
         updateFieldComboBoxEventHandler(updateFieldComboBox, dialog);
 
         JPanel buttonPanel = new JPanel();
         JButton updateButton = new JButton("update");
-        JButton cancelButton = createCancelButton(dialog);
+        JButton cancelButton = createCancelButton(dialog, "end");
 
         updateEventHandler(updateButton, updateFieldComboBox, curExercise, log, dialog);
 
@@ -480,18 +484,6 @@ public class FitnessRecordUI extends JFrame {
     }
 
     /*
-     * EFFECTS: creates and return a date panel
-     */
-    private JPanel createDatePanel() {
-        JPanel datePanel = new JPanel(new GridLayout(1, 3));
-        datePanel.add(yearField);
-        datePanel.add(monthField);
-        datePanel.add(dayField);
-
-        return datePanel;
-    }
-
-    /*
      * REQUIRES: updateExercisePanel != null, updateFieldComboBox != null, curExercise != null, log != null
      * MODIFIES: this
      * EFFECTS: adds fields to update an exercise and hide all input fields initially
@@ -530,15 +522,153 @@ public class FitnessRecordUI extends JFrame {
      * MODIFIES: this
      * EFFECTS: iterates through all logs and display the details in the main panel
      */
-    private void displayAllLogs(List<Log> logs) {
-
+    private void displayAllLogs(List<Log> logs, String title) {
+        logDisplay.setText("");
+        if (logs.isEmpty()) {
+            JDialog dialog = createDialog("Nothing saved yet", 200, 200);
+            JOptionPane.showMessageDialog(dialog, "No exercise in this application now!!!!");
+        }
         for (int i = 0; i < logs.size(); i++) {
-            displayLog(logs.get(i).getExercise(), logs.get(i).getDate(), "Exercises in the list");
+            displayLog(logs.get(i).getExercise(), logs.get(i).getDate(), title);
         }
     }
 
+    /*
+     * MODIFIES: this
+     * EFFECTS: gives options to users for exercise to be filtered by date or muscle type
+     *          and sets up event handlers for filtering
+     */
     private void filteredLog() {
-        JOptionPane.showMessageDialog(this, "Add Exercise");
+        JDialog dialog = createDialog("Filter log", 400, 75);
+
+        JPanel buttonPanel = new JPanel();
+        JButton dateButton = new JButton("Filtered by Date");
+        JButton exerciseMuscleTypeButton = new JButton("Filtered by Muscle Type");
+
+        buttonPanel.add(dateButton);
+        buttonPanel.add(exerciseMuscleTypeButton);
+        
+        filteredByDateEventHandler(dateButton);
+        filteredByMuscleTypeEventHandler(exerciseMuscleTypeButton);
+
+        dialog.add(buttonPanel);
+
+        centreOnScreen();
+        dialog.setVisible(true);
+        dialog.pack();
+    }
+
+    /*
+     * REUQIRES: dataButton and dialog != null
+     * MODIFIES: this
+     * EFFECTS: pops up a window to filter exercises by date
+     *          allows users to input a date in the format yyyy/mm/dd
+     *          filters the log matching the date and display the result in main panel
+     */
+    private void filteredByDateEventHandler(JButton dateButton) {
+        dateButton.addActionListener(e -> {
+            JDialog subDialog = createDialog("Filtered By Date", 400, 150);
+        
+            JPanel datePanel = new JPanel();
+            getDate(datePanel);
+
+            JButton filterButton = new JButton("filter");
+            JButton cancelButton = createCancelButton(subDialog, "cancel");
+
+            filteredByDateEventHandlerHelper(filterButton, subDialog);
+
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.add(filterButton);
+            buttonPanel.add(cancelButton);
+
+            subDialog.add(datePanel, BorderLayout.CENTER);
+            subDialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            subDialog.pack();
+            subDialog.setVisible(true);
+        });
+
+    }
+
+    /*
+     * REQURIES: filterButton and subDialog != null
+     * MODIFIES: this
+     * EFFECTS: filters and displays exercises by the inputted date
+     */
+    private void filteredByDateEventHandlerHelper(JButton filterButton, JDialog subDialog) {
+        filterButton.addActionListener(event -> {
+            try {
+                String date = String.format("%s/%s/%s", 
+                                        yearField.getText(), monthField.getText(), dayField.getText());
+
+                List<Log> filteredLogs = new Log().filteredExercisesByDate(date);
+
+                if (filteredLogs.isEmpty()) {
+                    JOptionPane.showMessageDialog(subDialog, "No exercise founded for the given date!");
+                } else {
+                    displayAllLogs(filteredLogs, "Filtered Exercises");
+                }
+
+                subDialog.dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(subDialog, "Invalid data format. Please try again.");
+            }
+        });
+    }
+
+    /*
+     * REUQIRES: muscleTypeButton and dialog != null
+     * MODIFIES: this
+     * EFFECTS: pops up a window to filter exercises by muscle type
+     *          allows users to input muscle type by choosing
+     *          filters the log matching the muscle type and display the result in main panel
+     */
+    private void filteredByMuscleTypeEventHandler(JButton muscleTypeButton) {
+        muscleTypeButton.addActionListener(e -> {
+            JDialog subDialog = createDialog("Filtered By Exercise Name", 400, 150);
+
+            JPanel muscleTypePanel = new JPanel();
+            muscleTypePanel.setLayout(new GridLayout(2, 1));
+            JLabel muscleTypeLabel = new JLabel("Select Muscle Type: ");
+            muscleComboBox = createMuscleCombo();
+
+            muscleTypePanel.add(muscleTypeLabel);
+            muscleTypePanel.add(muscleComboBox);
+
+            JButton filterButton = new JButton("filter");
+            JButton cancelButton = createCancelButton(subDialog, "cancel");
+
+            filteredByMuscleTypeEventHandlerHelper(filterButton, subDialog);
+            
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.add(filterButton);
+            buttonPanel.add(cancelButton);
+
+            subDialog.add(muscleTypePanel, BorderLayout.CENTER);
+            subDialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            subDialog.setVisible(true);
+        });
+    }
+
+    /*
+     * REQURIES: filterButton and subDialog != null
+     * MODIFIES: this
+     * EFFECTS: filteres and displays exercises by the inputted muscle type
+     */
+    private void filteredByMuscleTypeEventHandlerHelper(JButton filterButton, JDialog subDialog) {
+        filterButton.addActionListener(event -> {
+            Muscles selectedMuscleType = (Muscles) muscleComboBox.getSelectedItem();
+            List<Log> filteredLogs = new Log().filteredExercisesByType(selectedMuscleType);
+
+            if (filteredLogs.isEmpty()) {
+                JOptionPane.showMessageDialog(subDialog, "No exercise founded for the given muscle type!");
+            } else {
+                displayAllLogs(filteredLogs, "Filtered Exercises");
+            }
+
+            subDialog.dispose();
+        });
     }
 
     private void saveLogsToFile() {
