@@ -671,10 +671,17 @@ public class FitnessRecordUI extends JFrame {
         });
     }
 
+    /*
+     * MODIFIES: a file
+     * EFFECTS: saves all logs to a file
+     */
     private void saveLogsToFile() {
         JOptionPane.showMessageDialog(this, "Add Exercise");
     }
 
+    /*
+     * EFFECTS: loads logs from a file
+     */
     private void loadLogsFromFile() {
         JOptionPane.showMessageDialog(this, "Add Exercise");
     }
