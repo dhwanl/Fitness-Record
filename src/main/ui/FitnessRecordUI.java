@@ -13,8 +13,8 @@ import model.Muscles;
 import java.util.List;
 
 /*
-    * Represent application's main window frame
-    */
+* Represent application's main window frame
+*/
 public class FitnessRecordUI extends JFrame {
     private static final int WIDTH = 350;
     private static final int HEIGHT = 700;
@@ -39,9 +39,11 @@ public class FitnessRecordUI extends JFrame {
         "Date yyyy/mm/dd"
     };
     
+
     /*
-        * Constructor calls a method to create main panel
-        */
+     * MODIFIES: this
+     * EFFECTS: creates the main application window and initialize components
+     */
     public FitnessRecordUI() {
         parentFrame = new JFrame("Fitness Record");
         parentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -62,8 +64,9 @@ public class FitnessRecordUI extends JFrame {
     }
 
     /*
-        * Create a button panel to be located at the bottom of the main panel
-        */
+     * MODIFIES: this
+     * EFFECTS: creates and adds the option button panel to the main frame
+     */
     private void addButtonPanel() {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(8, 1));
@@ -82,24 +85,19 @@ public class FitnessRecordUI extends JFrame {
     }
 
     /*
-        * Create a button
-        */
+     * REQUIRES: text != null, action != null
+     * EFFECTS: creates and returns a button with the text and action listener
+     */
     private JButton createButton(String text, ActionListener action) {
         JButton button = new JButton(text);
         button.addActionListener(action);
         return button;
     }
 
-    private JDialog createDialog(String title, int w, int h) {
-        JDialog dialog = new JDialog(parentFrame, title, true);
-        dialog.setSize(w, h);
-        dialog.setLocationRelativeTo(parentFrame);
-        dialog.setLayout(new BorderLayout());
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-        return dialog;
-    }
-
+    /*
+     * MODIFIES: this
+     * EFFECTS: open a window to add a new exercise log
+     */
     private void addExercise() {
         JDialog dialog = createDialog("Add Exercise", 400, 400);
         
@@ -114,26 +112,49 @@ public class FitnessRecordUI extends JFrame {
         dialog.setVisible(true);
     }
 
+    /*
+     * REQUIRES: title != null, w > 0, h > 0
+     * EFFECTS: creates a new window with the specified title, width, and height
+     */
+    private JDialog createDialog(String title, int w, int h) {
+        JDialog dialog = new JDialog(parentFrame, title, true);
+        dialog.setSize(w, h);
+        dialog.setLocationRelativeTo(parentFrame);
+        dialog.setLayout(new BorderLayout());
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        return dialog;
+    }
+
+    /*
+     * REQUIRES: purpose is one of "addEx", "removeEx", "updateEx"
+     * EFFECTS: creates a panel with buttons for saving and canceling
+     */
     private JPanel exerciseButtonPanel(JDialog dialog, String purpose) {
         JPanel buttonPanel = new JPanel();
-        JButton saveButton = new JButton();
+        JButton button = new JButton();
         JButton cancelButton = createCancelButton(dialog);
 
 
         if (purpose.equals("addEx")) {
-            saveButton = createSaveButton(dialog);
+            button = createSaveButton(dialog);
         } else if (purpose.equals("removeEx")) {
-            saveButton = createSaveButtonForRemove(dialog);
+            button = createSaveButtonForRemove(dialog);
         } else if (purpose.equals("updateEx")) {
-            saveButton = createSaveButtonForUpdate(dialog);
+            button = createSaveButtonForUpdate(dialog);
         }
 
-        buttonPanel.add(saveButton);
+        buttonPanel.add(button);
         buttonPanel.add(cancelButton);
 
         return buttonPanel;
     }
 
+    /*
+     * REQUIRES: dialog != null
+     * MODIFIES: this, Log.exercises
+     * EFFECTS: creates and adds a new exercise to the logs with the success message
+     */
     private JButton createSaveButton(JDialog dialog) {
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(e -> {
@@ -162,12 +183,22 @@ public class FitnessRecordUI extends JFrame {
         return saveButton;
     }
 
+    /*
+     * REQUIRES: dialog != null
+     * MODIFIES: this
+     * EFFECTS: creates and returns a cancel button that closes the window
+     */
     private JButton createCancelButton(JDialog dialog) {
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(e -> dialog.dispose());
         return cancelButton;
     }
 
+    /*
+     * REQUIRES: e != null, date != null, title != null
+     * MODIFIES: this
+     * EFFECTS: appends exercise to the log display area
+     */
     private void displayLog(Exercise e, String date, String title) {
         logDisplay.append(String.format(
                 "\n" + title + ": %s\n Muscle: %s\n Weight: %d kg\n Reps: %d\n Sets: %d\n Date: %s\n", 
@@ -181,6 +212,11 @@ public class FitnessRecordUI extends JFrame {
         );
     }
 
+    /*
+     * REQUIRES: addExercisePanel != null
+     * MODIFIES: this
+     * EFFECTS: adds input field to the specified panel for adding a new exercise
+     */
     private void addExerciseFormat(JPanel addExercisePanel) {
 
         for (int i = 0; i < labels.length; i++) {
@@ -207,6 +243,11 @@ public class FitnessRecordUI extends JFrame {
         }
     }
 
+    /*
+     * REQUIRES: addExercisePanel != null
+     * MODIFIES: this
+     * EFFECTS: initializes and adds input field for date to the panel
+     */
     private void getDate(JPanel addExercisePanel) {
         yearField = new JTextField("YYYY");
         monthField = new JTextField("MM");
@@ -220,6 +261,10 @@ public class FitnessRecordUI extends JFrame {
         addExercisePanel.add(datePanel);
     }
 
+    /*
+     * MODIFIES: this
+     * EFFECTS: creates a new window for user to remove a specific exercise from the log
+     */
     private void removeExercise() {
         JDialog dialog = createDialog("Remove Exercise", 300, 150);
 
@@ -234,9 +279,14 @@ public class FitnessRecordUI extends JFrame {
         dialog.setVisible(true);
     }
 
+    /*
+     * REQUIRES: dialog != null
+     * MODIFIES: this, Log.exercises
+     * EFFECTS: removes an exercise from the log by clicking the remove button
+     */
     private JButton createSaveButtonForRemove(JDialog dialog) {
-        JButton saveButton = new JButton("Remove");
-        saveButton.addActionListener(e -> {
+        JButton removeButton = new JButton("Remove");
+        removeButton.addActionListener(e -> {
             try {
                 String exerciseName = nameField.getText();
                 String date = String.format("%s/%s/%s", yearField.getText(), monthField.getText(), dayField.getText());
@@ -257,9 +307,14 @@ public class FitnessRecordUI extends JFrame {
             }
         });
 
-        return saveButton;
+        return removeButton;
     }
 
+    /*
+     * REQUIRES: removeExercisePanel != null
+     * MODIFIES: this
+     * EFFECTS: adds input fields for removing an exercise (exercise name, date)
+     */
     private void removeExericseFormat(JPanel removeExercisePanel) {
         removeExercisePanel.add(new JLabel(labels[0]));
         nameField = new JTextField();
@@ -269,6 +324,10 @@ public class FitnessRecordUI extends JFrame {
         getDate(removeExercisePanel);
     }
 
+    /*
+     * MODIFIES: this
+     * EFFECTS: find exercise log for updating
+     */
     private void updateLog() {
         JDialog dialog = createDialog("Update Exercise", 300, 150);
         
@@ -283,6 +342,11 @@ public class FitnessRecordUI extends JFrame {
         dialog.setVisible(true);
     }
 
+    /*
+     * REQUIRES: updateExercisePanel != null
+     * MODIFIES: this
+     * EFFECTS: adds input field for finding an exercise log to update
+     */
     private void updateExericseFormat(JPanel updateExercisePanel) {
         updateExercisePanel.add(new JLabel(labels[0]));
         nameField = new JTextField();
@@ -292,6 +356,11 @@ public class FitnessRecordUI extends JFrame {
         getDate(updateExercisePanel);
     }
 
+    /*
+     * REQURIES: dialog != null
+     * MODIFIES: this
+     * EFFECTS: finds a matching exercise log based on the input name and date, and open a new window.
+     */
     private JButton createSaveButtonForUpdate(JDialog dialog) {
         JButton saveButton = new JButton("Find");
         saveButton.addActionListener(e -> {
@@ -320,6 +389,11 @@ public class FitnessRecordUI extends JFrame {
         return saveButton;
     }
     
+    /*
+     * REQUIRES: log != null
+     * MODIFIES: log, Exercise
+     * EFFECTS: open a window for updating info by field
+     */
     private void updateOptions(Log log) {
         JDialog dialog = createDialog("Update Exercise Options", 400, 400);
 
@@ -352,6 +426,11 @@ public class FitnessRecordUI extends JFrame {
         dialog.setVisible(true);
     }
     
+    /*
+     * REQUIRES: updateFieldComboBox != null, dialog != null
+     * MODIFIES: this
+     * EFFECTS: adds event handler to the combo box to visualize the input field by the option users choose
+     */
     private void updateFieldComboBoxEventHandler(JComboBox<String> updateFieldComboBox, JDialog dialog) {
         updateFieldComboBox.addActionListener(e -> {
             String selected = (String) updateFieldComboBox.getSelectedItem();
@@ -368,6 +447,11 @@ public class FitnessRecordUI extends JFrame {
         });
     }
 
+    /*
+     * REQUIRES: updateButton != null, updateFieldComboBox != null, curExercise != null, log != null, dialog != null
+     * MODIFIES: curExercise, log
+     * EFFECTS: updates the selected field in the exercise log with the new input value
+     */
     private void updateEventHandler(JButton updateButton, JComboBox<String> updateFieldComboBox, 
                                             Exercise curExercise, Log log, JDialog dialog) {
         updateButton.addActionListener(e -> {
@@ -395,6 +479,9 @@ public class FitnessRecordUI extends JFrame {
         });
     }
 
+    /*
+     * EFFECTS: creates and return a date panel
+     */
     private JPanel createDatePanel() {
         JPanel datePanel = new JPanel(new GridLayout(1, 3));
         datePanel.add(yearField);
@@ -404,6 +491,11 @@ public class FitnessRecordUI extends JFrame {
         return datePanel;
     }
 
+    /*
+     * REQUIRES: updateExercisePanel != null, updateFieldComboBox != null, curExercise != null, log != null
+     * MODIFIES: this
+     * EFFECTS: adds fields to update an exercise and hide all input fields initially
+     */
     private void updateExercisePanelWithFields(JPanel updateExercisePanel, JComboBox<String> updateFieldComboBox, 
                                                     Exercise curExercise, Log log) {
         nameField = new JTextField(curExercise.getExerciseName());
@@ -433,6 +525,11 @@ public class FitnessRecordUI extends JFrame {
         dayField.setVisible(false);
     }
 
+    /*
+     * REQUIRES: logs != null
+     * MODIFIES: this
+     * EFFECTS: iterates through all logs and display the details in the main panel
+     */
     private void displayAllLogs(List<Log> logs) {
 
         for (int i = 0; i < logs.size(); i++) {
@@ -452,9 +549,9 @@ public class FitnessRecordUI extends JFrame {
         JOptionPane.showMessageDialog(this, "Add Exercise");
     }
 
-    /**
-     * Helper to create print options combo box
-     * the combo box
+    /*
+     * MODIFIES: muscleComboBox
+     * EFFECTS: creates and returns a combo box with muscle types
      */
     private JComboBox<Muscles> createMuscleCombo() {
         muscleComboBox = new JComboBox<>();
@@ -466,8 +563,9 @@ public class FitnessRecordUI extends JFrame {
         return muscleComboBox;
     }
 
-    /**
-     * Helper to centre main application window on desktop
+    /*
+     * MODIFIES: this
+     * EFFECTS: centers the parent frame on the screen
      */
     private void centreOnScreen() {
         int width = Toolkit.getDefaultToolkit().getScreenSize().width;
