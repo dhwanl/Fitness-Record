@@ -104,14 +104,14 @@ public class Log implements Writable {
         this.getExercise().setNumReps(newReps);
     }
 
-    // /*
-    //  * REQUIRES: date in format (yyyy/mm/dd)
-    //  * MODIFIES: this
-    //  * EFFECTS: update the date
-    //  */
-    // public void updateDate(String date) {
-    //     this.date = date;
-    // }
+    /*
+     * REQUIRES: date in format (yyyy/mm/dd)
+     * MODIFIES: this
+     * EFFECTS: update the date
+     */
+    public void updateDate(String date) {
+        this.date = date;
+    }
 
     /*
      * REQUIRES: response == 1 || response == 2;
