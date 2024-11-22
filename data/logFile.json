@@ -28,5 +28,15 @@
             "exercise name": "Squat",
             "weight": 90
         }
+    },
+    {
+        "date": "2024/11/21",
+        "exercise": {
+            "muscle Type": "LEGS",
+            "number of sets": 10,
+            "number of Repetitions": 3,
+            "exercise name": "Test",
+            "weight": 100
+        }
     }
 ]
