@@ -26,6 +26,7 @@ public class FitnessRecordUI extends JFrame {
     private static final int WIDTH = 350;
     private static final int HEIGHT = 700;
     private static final String JSON_STORE = "./data/";
+    private static final String IMAGE_STORE = "./image/background.png";
     
     private JFrame parentFrame;
     private JComboBox<Muscles> muscleComboBox;
@@ -57,12 +58,9 @@ public class FitnessRecordUI extends JFrame {
         parentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         parentFrame.setSize(WIDTH, HEIGHT);
         parentFrame.setLayout(new BorderLayout());
-        
-        logDisplay = new JTextArea();
-        logDisplay.setEditable(false);
-        scrollPane = new JScrollPane(logDisplay);
-        scrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
-        parentFrame.add(scrollPane, BorderLayout.CENTER);
+
+
+        parentFrame.add(new ImagePanel(IMAGE_STORE), BorderLayout.CENTER);
 
         addButtonPanel();
         
@@ -104,10 +102,28 @@ public class FitnessRecordUI extends JFrame {
     }
 
     /*
+     * MODIFIES: logDisplay, scrollPane, parentFrame
+     * EFFECTS: if logDisplay is null, initializes a new JTextArea and wraps it in a JScrollPane.
+     */
+    private void createDisplayLog() {
+        if (logDisplay == null) {
+            logDisplay = new JTextArea();
+            logDisplay.setEditable(false);
+            scrollPane = new JScrollPane(logDisplay);
+            scrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+            parentFrame.add(scrollPane, BorderLayout.CENTER);
+            setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            centreOnScreen();
+            parentFrame.setVisible(true);
+        }
+    }
+
+    /*
      * MODIFIES: this
      * EFFECTS: open a window to add a new exercise log
      */
     private void addExercise() {
+        createDisplayLog();
         JDialog dialog = createDialog("Add Exercise", 400, 400);
         
         JPanel addExercisePanel = new JPanel();
@@ -275,6 +291,7 @@ public class FitnessRecordUI extends JFrame {
      * EFFECTS: creates a new window for user to remove a specific exercise from the log
      */
     private void removeExercise() {
+        createDisplayLog();
         JDialog dialog = createDialog("Remove Exercise", 300, 150);
 
         JPanel removeExercisePanel = new JPanel();
@@ -338,6 +355,7 @@ public class FitnessRecordUI extends JFrame {
      * EFFECTS: find exercise log for updating
      */
     private void updateLog() {
+        createDisplayLog();
         JDialog dialog = createDialog("Update Exercise", 300, 150);
         
         JPanel updateExercisePanel = new JPanel();
@@ -547,6 +565,7 @@ public class FitnessRecordUI extends JFrame {
      *          and sets up event handlers for filtering
      */
     private void filteredLog() {
+        createDisplayLog();
         JDialog dialog = createDialog("Filter log", 400, 75);
 
         JPanel buttonPanel = new JPanel();
@@ -684,6 +703,7 @@ public class FitnessRecordUI extends JFrame {
      * EFFECTS: saves all logs to a file
      */
     private void saveLogsToFile() {
+        createDisplayLog();
         String fileName = JOptionPane.showInputDialog(this, "Enter file name to save logs:");
         if (fileName == null) {
             JOptionPane.showMessageDialog(this, "File save canceled");
@@ -695,27 +715,7 @@ public class FitnessRecordUI extends JFrame {
                 fileName += ".json";
             }
 
-            JsonWriter jsonWriter = new JsonWriter(JSON_STORE + fileName);
-            
-            try {
-                JSONArray jsonArray = new JSONArray();
-                jsonWriter.open();
-                List<Log> logs = new Log().getAllExercisesLog();
-
-                if (logs.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "No logs to save!");
-                } else {
-                    for (Log log : logs) {
-                        jsonArray.put(log.toJson());
-                    }
-                }
-
-                jsonWriter.write(jsonArray);
-                jsonWriter.close();
-                JOptionPane.showMessageDialog(this, "Logs saved successfully to " + JSON_STORE + fileName);
-            } catch (FileNotFoundException e) {
-                JOptionPane.showMessageDialog(this, "Unable to write logs to the file: " + JSON_STORE + fileName);
-            }
+            saveLogsToFileHelper(fileName);
 
         } else if (fileName.isEmpty()) {
             JOptionPane.showMessageDialog(this, "file name cannot be empty!!!!!");
@@ -724,9 +724,39 @@ public class FitnessRecordUI extends JFrame {
     }
 
     /*
+     * REQUIRES: fileName != null
+     * MODIFIES: this
+     * EFFECTS: converts all logs to JSON format, and writes them to the specified file
+     */
+    private void saveLogsToFileHelper(String fileName) {
+        JsonWriter jsonWriter = new JsonWriter(JSON_STORE + fileName);
+            
+        try {
+            JSONArray jsonArray = new JSONArray();
+            jsonWriter.open();
+            List<Log> logs = new Log().getAllExercisesLog();
+
+            if (logs.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No logs to save!");
+            } else {
+                for (Log log : logs) {
+                    jsonArray.put(log.toJson());
+                }
+            }
+
+            jsonWriter.write(jsonArray);
+            jsonWriter.close();
+            JOptionPane.showMessageDialog(this, "Logs saved successfully to " + JSON_STORE + fileName);
+        } catch (FileNotFoundException e) {
+            JOptionPane.showMessageDialog(this, "Unable to write logs to the file: " + JSON_STORE + fileName);
+        }
+    }
+    
+    /*
      * EFFECTS: loads logs from a file
      */
     private void loadLogsFromFile() {
+        createDisplayLog();
         File f = new File("./data");
         String[] files = f.list();
         displayFileList(files);
@@ -743,24 +773,39 @@ public class FitnessRecordUI extends JFrame {
                 fileName += ".json";
             }
 
-            JsonReader jsonReader = new JsonReader(JSON_STORE + fileName);
-            
-            try {
-                new Log().getAllExercisesLog().clear();
-                List<Log> newLogs = jsonReader.read();
-
-                for (Log log : newLogs) {
-                    log.addLogToExercisesList();
-                }
-
-                JOptionPane.showMessageDialog(this, "Logs successfully loaded from " + JSON_STORE +fileName);
-            } catch(IOException e) {
-                JOptionPane.showMessageDialog(this, "Unable to read from file: " + JSON_STORE + fileName);
-            }
+            loadLogsFromFileHelper(fileName);
 
         }
     }
 
+    /*
+     * REQUIRES: fileName != null
+     * MODIFIES: logDisplay
+     * EFFECTS: reads logs from the specified file and adds them to the displayLog
+     */
+    private void loadLogsFromFileHelper(String fileName) {
+        JsonReader jsonReader = new JsonReader(JSON_STORE + fileName);
+            
+        try {
+            new Log().getAllExercisesLog().clear();
+            List<Log> newLogs = jsonReader.read();
+
+            for (Log log : newLogs) {
+                log.addLogToExercisesList();
+            }
+
+            JOptionPane.showMessageDialog(this, "Logs successfully loaded from " + JSON_STORE + fileName);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Unable to read from file: " + JSON_STORE + fileName);
+        }
+    }
+
+    /*
+     * REQUIRES: files != null
+     * MODIFIES: logDisplay
+     * EFFECTS: if files is empty, shows a message dialog stating "No files available to load!!!"
+     *          Otherwise, updates the logDisplay with the list of file names in files
+     */
     private void displayFileList(String[] files) {
 
         if (files.length == 0) {
