@@ -186,6 +186,8 @@ public class LogTest {
         logs.get(0).updateWeight(200);
         assertEquals(200.0, logs.get(0).getExercise().getWeightLifted());
 
+        logs.get(0).updateDate("2024/11/21");
+        assertEquals("2024/11/21", logs.get(0).getDate());
         logs.clear();
     }
 
