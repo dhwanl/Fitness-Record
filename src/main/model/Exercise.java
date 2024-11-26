@@ -7,7 +7,7 @@ import persistence.Writable;
 // Specify the exercise type, weight lifted, and number of sets and reps, as well as users can add and remove exercises
 public class Exercise implements Writable {
     private String exerciseName;    // the type of exercise
-    private int weightLifted;    // track the weight lifted in killogram
+    private int weightLifted;       // track the weight lifted in killogram
     private int numSets;            // track the number of sets of the exercise
     private int numReps;            // track the number of repetition of the exercise
     private Muscles muscleType;     // the type of muscle users use with exercise
@@ -36,6 +36,9 @@ public class Exercise implements Writable {
         this.weightLifted = weightLifted;
         this.numSets = numSets;
         this.numReps = numReps;
+        EventLog.getInstance().logEvent(new Event("Created a new exercise: " + exerciseName 
+                    + " with details: " + weightLifted + "kg, " + numSets 
+                    + " sets, " + numReps + " reps, " + muscleType.toString()));
     }
 
     /*
@@ -71,22 +74,29 @@ public class Exercise implements Writable {
     
     // setters
     public void setExerciseName(String exerciseName) {
+        EventLog.getInstance().logEvent(new Event("Updated exercise name to: " + exerciseName));
         this.exerciseName = capitalizationForFirstLetter(exerciseName);
     }
 
     public void setWeightLifted(int weight) {
+        EventLog.getInstance().logEvent(new Event("Updated weight to: " + weight + "kg for exercise: " + exerciseName));
         this.weightLifted = weight;
     }
 
     public void setNumReps(int reps) {
+        EventLog.getInstance().logEvent(new Event("Updated repetitions to: " 
+                            + reps + " for exercise: " + exerciseName));
         this.numReps = reps;
     }
 
     public void setNumSets(int sets) {
+        EventLog.getInstance().logEvent(new Event("Updated sets to " + sets + " for exercise: " + exerciseName));
         this.numSets = sets;
     }
 
     public void setMuscleType(Muscles muscleType) {
+        EventLog.getInstance().logEvent(new Event("Updated muscle type to: " 
+                    + muscleType + " for exercise: " + exerciseName));
         this.muscleType = muscleType;
     }
 
