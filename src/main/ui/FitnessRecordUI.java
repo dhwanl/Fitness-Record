@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -14,6 +13,7 @@ import org.json.JSONArray;
 import model.Exercise;
 import model.Log;
 import model.Muscles;
+import model.PrintEventLog;
 import persistence.JsonReader;
 import persistence.JsonWriter;
 
@@ -86,7 +86,10 @@ public class FitnessRecordUI extends JFrame {
                                                     "Exercises in the list")));
         buttonPanel.add(createButton("Save logs to file", e -> saveLogsToFile()));
         buttonPanel.add(createButton("Load logs from file", e -> loadLogsFromFile()));
-        buttonPanel.add(createButton("Exit", e -> System.exit(0)));
+        buttonPanel.add(createButton("Exit", e -> {
+            PrintEventLog.printEventLog();
+            System.exit(0);
+        }));
     
         parentFrame.add(buttonPanel, BorderLayout.SOUTH);
     }
@@ -549,6 +552,7 @@ public class FitnessRecordUI extends JFrame {
      * EFFECTS: iterates through all logs and display the details in the main panel
      */
     private void displayAllLogs(List<Log> logs, String title) {
+        createDisplayLog();
         logDisplay.setText("");
         if (logs.isEmpty()) {
             JDialog dialog = createDialog("Nothing saved yet", 200, 200);
@@ -739,9 +743,7 @@ public class FitnessRecordUI extends JFrame {
             if (logs.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No logs to save!");
             } else {
-                for (Log log : logs) {
-                    jsonArray.put(log.toJson());
-                }
+                jsonArray = new Log().saveLogsToJSonFile(fileName);
             }
 
             jsonWriter.write(jsonArray);
@@ -785,18 +787,13 @@ public class FitnessRecordUI extends JFrame {
      */
     private void loadLogsFromFileHelper(String fileName) {
         JsonReader jsonReader = new JsonReader(JSON_STORE + fileName);
-            
-        try {
-            new Log().getAllExercisesLog().clear();
-            List<Log> newLogs = jsonReader.read();
-
-            for (Log log : newLogs) {
-                log.addLogToExercisesList();
-            }
-
+        
+        List<Log> newLogs = new Log().fromJson(jsonReader, fileName);
+        
+        if (newLogs != null) {
             JOptionPane.showMessageDialog(this, "Logs successfully loaded from " + JSON_STORE + fileName);
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Unable to read from file: " + JSON_STORE + fileName);
+        } else {
+            JOptionPane.showMessageDialog(this, "Unable to read from file: " + JSON_STORE + fileName);  
         }
     }
 
