@@ -1,11 +1,14 @@
 package model;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import persistence.JsonReader;
 import persistence.Writable;
 
 /*
@@ -39,6 +42,8 @@ public class Log implements Writable {
     public Log(Exercise exercise, String date) {
         this.exercise = exercise;
         this.date = date;
+        EventLog.getInstance().logEvent(new Event("Created a new log for exercise: " 
+                            + exercise.getExerciseName() + " on " + date));
     }
 
     /*
@@ -53,9 +58,12 @@ public class Log implements Writable {
             String tempDate = exercises.get(i).getDate();
 
             if (tempName.equalsIgnoreCase(exerciseName) && tempDate.equals(date)) {
+                EventLog.getInstance().logEvent(new Event("Found log for exercise: " + exerciseName + " on " + date));
                 return i;
             }
         }
+
+        EventLog.getInstance().logEvent(new Event("No log found for exercise: " + exerciseName + " on " + date));
         
         return -1;
     }
@@ -66,6 +74,7 @@ public class Log implements Writable {
      * EFFECTS: update weight lifted
      */
     public void updateWeight(int newWeight) {
+        EventLog.getInstance().logEvent(new Event("Updated weight to: " + newWeight));
         this.getExercise().setWeightLifted(newWeight);
     }
 
@@ -75,6 +84,7 @@ public class Log implements Writable {
      * EFFECTS: update exercise name
      */
     public void updateName(String newExerciseName) {
+        EventLog.getInstance().logEvent(new Event("Updated exercise name to: " + newExerciseName));
         this.getExercise().setExerciseName(newExerciseName);
     }
 
@@ -83,6 +93,7 @@ public class Log implements Writable {
      * EFFECTS: update muscle type
      */
     public void updateMuscleType(Muscles newType) {
+        EventLog.getInstance().logEvent(new Event("Updated muscle type to: " + newType));
         this.getExercise().setMuscleType(newType);
     }
 
@@ -92,6 +103,7 @@ public class Log implements Writable {
      * EFFECTS: update the number of set
      */
     public void updateSets(int newSets) {
+        EventLog.getInstance().logEvent(new Event("Updated the number of sets to: " + newSets));
         this.getExercise().setNumSets(newSets);
     }
 
@@ -101,6 +113,7 @@ public class Log implements Writable {
      * EFFECTS: update the number of repetition
      */
     public void updateReps(int newReps) {
+        EventLog.getInstance().logEvent(new Event("Updated the number of reps to: " + newReps));
         this.getExercise().setNumReps(newReps);
     }
 
@@ -110,6 +123,8 @@ public class Log implements Writable {
      * EFFECTS: update the date
      */
     public void updateDate(String date) {
+        EventLog.getInstance().logEvent(new Event("Updated date to: " 
+                            + date + " for exercise: " + exercise.getExerciseName()));
         this.date = date;
     }
 
@@ -148,6 +163,7 @@ public class Log implements Writable {
             }
         }
 
+        EventLog.getInstance().logEvent(new Event("Exercises are filtered by muscle type"));
         return filteredByTypeLogs;
     }
 
@@ -165,7 +181,7 @@ public class Log implements Writable {
                 filteredByDateLogs.add(exercises.get(i));
             }
         }
-
+        EventLog.getInstance().logEvent(new Event("Exercises are filtered by Date"));
         return filteredByDateLogs;
     }
 
@@ -174,6 +190,8 @@ public class Log implements Writable {
      * EFFECTS: add the registered exercise into the exercises list
      */
     public void addLogToExercisesList() {
+        EventLog.getInstance().logEvent(new Event("Added log for exercise: " 
+                                    + exercise.getExerciseName() + " on " + date));
         exercises.add(this);
     }
 
@@ -190,14 +208,18 @@ public class Log implements Writable {
         if (matchedIndex != -1) {
             Log log = exercises.get(matchedIndex);
             exercises.remove(matchedIndex);
+            EventLog.getInstance().logEvent(new Event("Removed log for exercise: " + exerciseName + " on " + date));
             return log;
         }
 
+        EventLog.getInstance().logEvent(new Event("No log found to remove for exercise: " 
+                                                + exerciseName + " on " + date));
         return null;
     }
 
     // getters
     public List<Log> getAllExercisesLog() {
+        EventLog.getInstance().logEvent(new Event("View all exercise logs"));
         return exercises;
     }
 
@@ -207,6 +229,21 @@ public class Log implements Writable {
     
     public String getDate() {
         return date;
+    }
+
+    /*
+     * EFFECTS: converts each Log object into JSON format and adds it to a JSON array
+     */
+    public JSONArray saveLogsToJSonFile(String fileName) {
+        JSONArray jsonArray = new JSONArray();
+        
+        for (Log log : exercises) {
+            jsonArray.put(log.toJson());
+        }
+
+        EventLog.getInstance().logEvent(new Event("Saved all exercise logs to json file: " + fileName));
+
+        return jsonArray;
     }
 
     @Override
@@ -226,5 +263,30 @@ public class Log implements Writable {
         }
 
         return json;
+    }
+
+    /*
+     * REQUIRES: jsonReader != null
+     * MODIFIES: exercises
+     * EFFECTS: adds the logs to the exercise list
+     */
+    public List<Log> fromJson(JsonReader jsonReader, String fileName) {
+        List<Log> newLogs;
+
+        try {
+            new Log().getAllExercisesLog().clear();
+            newLogs = jsonReader.read();
+
+            for (Log log : newLogs) {
+                log.addLogToExercisesList();
+            }
+
+        } catch (IOException e) {
+            newLogs = new ArrayList<>();
+        }
+
+        EventLog.getInstance().logEvent(new Event("Loaded logs to json file: " + fileName));
+
+        return newLogs;
     }
 }
