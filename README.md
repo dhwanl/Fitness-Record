@@ -24,3 +24,77 @@
 - As a user, I want to be able to filter my workout log by date or exercise type to analyze my progrss more easily
 - As a user, I want to be able to save my workout log to a file and name the file
 - As a user, I want to be able to load my workout log from a file by entering the file name
+
+## Phase 4: Task 2
+****************Event Log****************
+Tue Nov 26 13:26:41 PST 2024
+Created a new exercise: B with details: 1kg, 1 sets, 1 reps, LEGS
+Tue Nov 26 13:26:41 PST 2024
+Created a new log for exercise: B on 1111/11/11
+Tue Nov 26 13:26:41 PST 2024
+Added log for exercise: B on 1111/11/11
+Tue Nov 26 13:26:51 PST 2024
+View all exercise logs
+Tue Nov 26 13:26:51 PST 2024
+Found log for exercise: B on 1111/11/11
+Tue Nov 26 13:26:59 PST 2024
+Updated exercise name to: Bench press
+Tue Nov 26 13:27:05 PST 2024
+Updated muscle type to: CHEST for exercise: Bench press
+Tue Nov 26 13:27:10 PST 2024
+Updated weight to: 100kg for exercise: Bench press
+Tue Nov 26 13:27:15 PST 2024
+Updated repetitions to: 10 for exercise: Bench press
+Tue Nov 26 13:27:20 PST 2024
+Updated sets to 3 for exercise: Bench press
+Tue Nov 26 13:27:27 PST 2024
+Updated date to: 2024/11/26 for exercise: Bench press
+Tue Nov 26 13:27:32 PST 2024
+View all exercise logs
+Tue Nov 26 13:27:58 PST 2024
+Found log for exercise: Bench press on 2024/11/26
+Tue Nov 26 13:27:58 PST 2024
+Removed log for exercise: Bench press on 2024/11/26
+Tue Nov 26 13:28:01 PST 2024
+View all exercise logs
+Tue Nov 26 13:28:06 PST 2024
+View all exercise logs
+Tue Nov 26 13:28:06 PST 2024
+Created a new exercise: Bench press with details: 100kg, 3 sets, 12 reps, CHEST
+Tue Nov 26 13:28:06 PST 2024
+Created a new log for exercise: Bench press on 2024/10/10
+Tue Nov 26 13:28:06 PST 2024
+Created a new exercise: Shoulder press with details: 50kg, 4 sets, 11 reps, SHOULDERS
+Tue Nov 26 13:28:06 PST 2024
+Created a new log for exercise: Shoulder press on 2024/10/10
+Tue Nov 26 13:28:06 PST 2024
+Created a new exercise: Squat with details: 90kg, 3 sets, 10 reps, LEGS
+Tue Nov 26 13:28:06 PST 2024
+Created a new log for exercise: Squat on 2024/10/10
+Tue Nov 26 13:28:06 PST 2024
+Created a new exercise: Test with details: 100kg, 10 sets, 3 reps, LEGS
+Tue Nov 26 13:28:06 PST 2024
+Created a new log for exercise: Test on 2024/11/21
+Tue Nov 26 13:28:06 PST 2024
+Added log for exercise: Bench press on 2024/10/10
+Tue Nov 26 13:28:06 PST 2024
+Added log for exercise: Shoulder press on 2024/10/10
+Tue Nov 26 13:28:06 PST 2024
+Added log for exercise: Squat on 2024/10/10
+Tue Nov 26 13:28:06 PST 2024
+Added log for exercise: Test on 2024/11/21
+Tue Nov 26 13:28:06 PST 2024
+Loaded logs to json file: logfile.json
+Tue Nov 26 13:28:10 PST 2024
+View all exercise logs
+Tue Nov 26 13:28:18 PST 2024
+Exercises are filtered by Date
+Tue Nov 26 13:28:29 PST 2024
+Exercises are filtered by muscle type
+Tue Nov 26 13:28:33 PST 2024
+Exercises are filtered by muscle type
+Tue Nov 26 13:28:41 PST 2024
+View all exercise logs
+Tue Nov 26 13:28:41 PST 2024
+Saved all exercise logs to json file: logFile.json
+*****************************************
