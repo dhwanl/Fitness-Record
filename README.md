@@ -98,3 +98,6 @@ View all exercise logs
 Tue Nov 26 13:28:41 PST 2024
 Saved all exercise logs to json file: logFile.json
 *****************************************
+
+## Phase 4: Task 3
+If I had more time, I would refactor the code by separating methods in the FitnessRecordUI class, which currently exceeds 800 lines, into purpose-specific classes. Organizing methods by their functionality would make the application easier to maintain, improve readability, and adhere to the single responsibility principle.
