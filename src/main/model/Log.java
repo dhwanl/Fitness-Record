@@ -21,7 +21,6 @@ import persistence.Writable;
  */
 public class Log implements Writable {
     private static List<Log> exercises = new ArrayList<Log>();  // store all exercises users did
-
     private Exercise exercise;     // data type Exercise variable
     private String date;           // date in the format "year/month/date"
 
