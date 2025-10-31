@@ -2,32 +2,34 @@ package ui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-import org.json.JSONArray;
-
 import model.Exercise;
-import model.Log;
+import model.Logbook;
 import model.Muscles;
+import model.WorkoutSession;
 import model.PrintEventLog;
-import persistence.JsonReader;
-import persistence.JsonWriter;
 
 import java.util.List;
 
 /*
 * Represent application's main window frame
+* This class now acts as the VIEW and CONTROLLER
+* It sends all user actions to the LOGBOOK (the model)
 */
 public class FitnessRecordUI extends JFrame {
     private static final int WIDTH = 350;
     private static final int HEIGHT = 700;
-    private static final String JSON_STORE = "./data/";
     private static final String IMAGE_STORE = "./image/background.png";
     
+    // MODEL
+    private Logbook logbook;
+
+    // View components
     private JFrame parentFrame;
     private JComboBox<Muscles> muscleComboBox;
     private JTextArea logDisplay;
@@ -54,17 +56,39 @@ public class FitnessRecordUI extends JFrame {
      * EFFECTS: creates the main application window and initialize components
      */
     public FitnessRecordUI() {
+        // Initialize the LogBook. This is the Model
+        // It automatically knows where to save/load from.
+        logbook = new Logbook("./data/fitness_log.json");
+
         parentFrame = new JFrame("Fitness Record");
         parentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         parentFrame.setSize(WIDTH, HEIGHT);
         parentFrame.setLayout(new BorderLayout());
+        
+        JRootPane rootPane = parentFrame.getRootPane();
+        InputMap inputMap = rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap actionMap = rootPane.getActionMap();
+        KeyStroke escapeKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        
+        inputMap.put(escapeKey, "EXIT_PROGRAM");
+        actionMap.put("EXIT_PROGRAM", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                PrintEventLog.printEventLog();
+                System.exit(0);
+            }
+        });
 
+        // Attempt to load existing logs on startup
+        try {
+            logbook.loadLogBook();
+        } catch (IOException e) {
+            System.out.println("No existing log file found. Starting fresh.");
+        }
 
         parentFrame.add(new ImagePanel(IMAGE_STORE), BorderLayout.CENTER);
-
         addButtonPanel();
-        
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
         centreOnScreen();
         parentFrame.setVisible(true);
     }
@@ -82,8 +106,7 @@ public class FitnessRecordUI extends JFrame {
         buttonPanel.add(createButton("Update the log", e -> updateLog()));
         buttonPanel.add(createButton("Filter workout log", e -> filteredLog()));
         buttonPanel.add(createButton("View all exercises you added", 
-                                            e -> displayAllLogs(new Log().getAllExercisesLog(), 
-                                                    "Exercises in the list")));
+                                            e -> displayAllLogs()));
         buttonPanel.add(createButton("Save logs to file", e -> saveLogsToFile()));
         buttonPanel.add(createButton("Load logs from file", e -> loadLogsFromFile()));
         buttonPanel.add(createButton("Exit", e -> {
@@ -115,7 +138,6 @@ public class FitnessRecordUI extends JFrame {
             scrollPane = new JScrollPane(logDisplay);
             scrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
             parentFrame.add(scrollPane, BorderLayout.CENTER);
-            setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             centreOnScreen();
             parentFrame.setVisible(true);
         }
@@ -151,6 +173,28 @@ public class FitnessRecordUI extends JFrame {
         dialog.setLayout(new BorderLayout());
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
+        // 1. Get the dialog's root pane (its main content area)
+        JRootPane rootPane = dialog.getRootPane();
+        
+        // 2. Use the more robust "WHEN_ANCESTOR" binding
+        InputMap inputMap = rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap actionMap = rootPane.getActionMap();
+
+        // 3. Define the ESC key
+        KeyStroke escapeKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+
+        // 4. Map the ESC key to an "action name"
+        inputMap.put(escapeKey, "CLOSE_DIALOG");
+
+        // 5. Map the "action name" to an actual action
+        actionMap.put("CLOSE_DIALOG", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // This just closes the pop-up, not the whole app
+                dialog.dispose();
+            }
+        });
+        
         return dialog;
     }
 
@@ -193,15 +237,28 @@ public class FitnessRecordUI extends JFrame {
                 int reps = Integer.parseInt(repsField.getText());
                 int sets = Integer.parseInt(setsField.getText());
                 String date = String.format("%s/%s/%s", yearField.getText(), monthField.getText(), dayField.getText());
-
+                
+                // creates the exercise object
                 Exercise exercise = new Exercise(exerciseName, muscleType, weight, reps, sets);
-                Log newLog = new Log(exercise, date);
-                newLog.addLogToExercisesList();
+                // finds the session for that date
+                WorkoutSession session = logbook.getSessionByDate(date);
+                
+                if (session == null) {
+                    // if no session exists for that date, create one
+                    session = new WorkoutSession(date);
+                    logbook.addSession(session);
+                }
 
+                // adds the exercise to that day's session
+                session.addExercise(exercise);
+                
+                // updates display and close
                 displayLog(exercise, date, "Exercise Added");
-
                 JOptionPane.showMessageDialog(dialog, "Exercise added successfully");
                 dialog.dispose();
+
+                // refreshes the main view to show the new exercise
+                displayAllLogs();
 
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(dialog, "Please enter vaild numbers for weight, reps, and sets:)");
@@ -291,7 +348,7 @@ public class FitnessRecordUI extends JFrame {
 
     /*
      * MODIFIES: this
-     * EFFECTS: creates a new window for user to remove a specific exercise from the log
+     * EFFECTS: creates a new window for user to remove a specific exercise log
      */
     private void removeExercise() {
         createDisplayLog();
@@ -304,35 +361,50 @@ public class FitnessRecordUI extends JFrame {
         removeExericseFormat(removeExercisePanel);
 
         dialog.add(removeExercisePanel, BorderLayout.CENTER);
+
         dialog.add(exerciseButtonPanel(dialog, "removeEx"), BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
 
     /*
      * REQUIRES: dialog != null
-     * MODIFIES: this, Log.exercises
-     * EFFECTS: removes an exercise from the log by clicking the remove button
+     * MODIFIES: this, logbook
+     * EFFECTS: creates a button that removes an exercise from the correct workout sessionin the logbook
      */
     private JButton createSaveButtonForRemove(JDialog dialog) {
         JButton removeButton = new JButton("Remove");
         removeButton.addActionListener(e -> {
             try {
+                // gets exerciseName and date from fields
                 String exerciseName = nameField.getText();
                 String date = String.format("%s/%s/%s", yearField.getText(), monthField.getText(), dayField.getText());
 
-                Log removedLog = new Log().removeLogExercises(exerciseName, date);
+                // finds the session from logbook
+                WorkoutSession session = logbook.getSessionByDate(date);
 
-                if (removedLog != null) {
-                    displayLog(removedLog.getExercise(), date, "Exercise Removed");
-                    JOptionPane.showMessageDialog(dialog, "Exercise removed successfully");
+                // checks if the session for that date even exists
+                if (session == null) {
+                    JOptionPane.showMessageDialog(dialog, "No workout session found for date: " + date);
                 } else {
-                    JOptionPane.showMessageDialog(dialog, "No matching exercise found");
+                    // the session exists, so tell it to remove the exercise
+                    boolean removed = session.removeExercise(exerciseName);
+
+                    // checks if the exercise was successfully found and removed
+                    if (removed) {
+                        JOptionPane.showMessageDialog(dialog, "Exercise '" + exerciseName + "' removed successfully.");
+
+                        // refreshes the main display to show the change
+                        displayAllLogs();
+                    } else {
+                        JOptionPane.showMessageDialog(dialog, "Exercise '" + exerciseName + "' not found on this date.");
+                    }
                 }
                 
+                // closes the pop-up dialog
                 dialog.dispose();
 
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog, "Please enter vaild numbers for date:)");
+                JOptionPane.showMessageDialog(dialog, "An error occured. Please check your inputs.");
             }
         });
 
@@ -355,11 +427,11 @@ public class FitnessRecordUI extends JFrame {
 
     /*
      * MODIFIES: this
-     * EFFECTS: find exercise log for updating
+     * EFFECTS: find exercise log for updating. This just opens the "find" dialog.
      */
     private void updateLog() {
         createDisplayLog();
-        JDialog dialog = createDialog("Update Exercise", 300, 150);
+        JDialog dialog = createDialog("Update Exercise: Step 1 (Find)", 300, 150);
         
         JPanel updateExercisePanel = new JPanel();
         updateExercisePanel.setLayout(new GridLayout(2, 2));
@@ -395,21 +467,34 @@ public class FitnessRecordUI extends JFrame {
         JButton saveButton = new JButton("Find");
         saveButton.addActionListener(e -> {
             try {
+                // gets user input
                 String exerciseName = nameField.getText();
                 String date = String.format("%s/%s/%s", yearField.getText(), monthField.getText(), dayField.getText());
 
-                List<Log> logs = new Log().getAllExercisesLog();
-                
-                int index = new Log().findMatchedLog(exerciseName, date);
-
-                if (index != -1) {
-                    updateOptions(logs.get(index));
-                    displayLog(logs.get(index).getExercise(), logs.get(index).getDate(), "Exercise updated");
-                } else {
-                    JOptionPane.showMessageDialog(dialog, "No matching exercise found");
+                // finds the session
+                WorkoutSession session = logbook.getSessionByDate(date);
+                if (session == null) {
+                    JOptionPane.showMessageDialog(dialog, "No workout session found for date: " + date);
+                    return;
                 }
-                
-                dialog.dispose();
+
+                // finds the exercise within the session
+                Exercise exerciseToUpdate = null;
+                for (Exercise ex : session.getExercises()) {
+                    if (ex.getExerciseName().equalsIgnoreCase(exerciseName)) {
+                        exerciseToUpdate = ex;
+                        break;
+                    }
+                }
+
+                // opens the update dialog if found, otherwise show error
+                if (exerciseToUpdate != null) {
+                    // We found it! Pass both the session and the exercise to the next step
+                    updateOptions(session, exerciseToUpdate);
+                    dialog.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(dialog, "Exercise '" + exerciseName + "' not found on this date.");
+                }
 
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(dialog, "Please enter vaild numbers for date:)");
@@ -420,21 +505,20 @@ public class FitnessRecordUI extends JFrame {
     }
     
     /*
-     * REQUIRES: log != null
-     * MODIFIES: log, Exercise
-     * EFFECTS: open a window for updating info by field
+     * REQUIRES: session != null, exercise != null
+     * MODIFIES: session, exercise
+     * EFFECTS: open a new window for updating the found exercise's info
      */
-    private void updateOptions(Log log) {
-        JDialog dialog = createDialog("Update Exercise Options", 400, 400);
+    private void updateOptions(WorkoutSession session, Exercise exercise) {
+        JDialog dialog = createDialog("Update Exercise: Step 2 (Edit)", 400, 400);
 
-        Exercise curExercise = log.getExercise();
         JPanel updateExercisePanel = new JPanel();
         updateExercisePanel.setLayout(new GridLayout(0, 1));
         updateExercisePanel.setBorder(new EmptyBorder(10, 5, 10, 5));
 
         JComboBox<String> updateFieldComboBox = new JComboBox<>(labels);
         
-        updateExercisePanelWithFields(updateExercisePanel, updateFieldComboBox, curExercise, log);
+        updateExercisePanelWithFields(updateExercisePanel, updateFieldComboBox, session, exercise);
 
         JPanel datePanel = new JPanel(new GridLayout(1, 3));
         datePanel.add(yearField);
@@ -445,11 +529,13 @@ public class FitnessRecordUI extends JFrame {
 
         updateFieldComboBoxEventHandler(updateFieldComboBox, dialog);
 
+        // sets up the buttons
         JPanel buttonPanel = new JPanel();
-        JButton updateButton = new JButton("update");
-        JButton cancelButton = createCancelButton(dialog, "end");
+        JButton updateButton = new JButton("Update");
+        JButton cancelButton = createCancelButton(dialog, "Cancel");
 
-        updateEventHandler(updateButton, updateFieldComboBox, curExercise, log, dialog);
+        // This helper adds the final update logic to the button
+        updateEventHandler(updateButton, updateFieldComboBox, session, exercise, dialog);
 
         buttonPanel.add(updateButton);
         buttonPanel.add(cancelButton);
@@ -481,29 +567,29 @@ public class FitnessRecordUI extends JFrame {
     }
 
     /*
-     * REQUIRES: updateButton != null, updateFieldComboBox != null, curExercise != null, log != null, dialog != null
-     * MODIFIES: curExercise, log
-     * EFFECTS: updates the selected field in the exercise log with the new input value
+     * REQUIRES: all params != null
+     * MODIFIES: session, exercise
+     * EFFECTS: updates the selected field in the exercise or session with the new input value
      */
     private void updateEventHandler(JButton updateButton, JComboBox<String> updateFieldComboBox, 
-                                            Exercise curExercise, Log log, JDialog dialog) {
+                                            WorkoutSession session, Exercise exercise, JDialog dialog) {
         updateButton.addActionListener(e -> {
             try {
                 String selected = (String) updateFieldComboBox.getSelectedItem();
                 if ("Exercise Name".equals(selected)) {
-                    curExercise.setExerciseName(nameField.getText());
+                    exercise.setExerciseName(nameField.getText());
                 } else if ("Muscle Type".equals(selected)) {
-                    curExercise.setMuscleType((Muscles) muscleComboBox.getSelectedItem());
+                    exercise.setMuscleType((Muscles) muscleComboBox.getSelectedItem());
                 } else if ("Weight (kg)".equals(selected)) {
-                    curExercise.setWeightLifted(Integer.parseInt(weightField.getText()));
+                    exercise.setWeightLifted(Integer.parseInt(weightField.getText()));
                 } else if ("Number of Reps".equals(selected)) {
-                    curExercise.setNumReps(Integer.parseInt(repsField.getText()));
+                    exercise.setNumReps(Integer.parseInt(repsField.getText()));
                 } else if ("Number of Sets".equals(selected)) {
-                    curExercise.setNumSets(Integer.parseInt(setsField.getText()));
+                    exercise.setNumSets(Integer.parseInt(setsField.getText()));
                 } else if ("Date yyyy/mm/dd".equals(selected)) {
                     String updatedDate = String.format("%s/%s/%s", 
                                             yearField.getText(), monthField.getText(), dayField.getText());
-                    log.updateDate(updatedDate);
+                    session.setDate(updatedDate);
                 }
                 JOptionPane.showMessageDialog(dialog, "Exercise updated successfully!");
             } catch (Exception ex) {
@@ -513,21 +599,27 @@ public class FitnessRecordUI extends JFrame {
     }
 
     /*
-     * REQUIRES: updateExercisePanel != null, updateFieldComboBox != null, curExercise != null, log != null
+     * REQUIRES: all params != null
      * MODIFIES: this
      * EFFECTS: adds fields to update an exercise and hide all input fields initially
      */
     private void updateExercisePanelWithFields(JPanel updateExercisePanel, JComboBox<String> updateFieldComboBox, 
-                                                    Exercise curExercise, Log log) {
-        nameField = new JTextField(curExercise.getExerciseName());
-        muscleComboBox.setSelectedItem(curExercise.getMuscleType());
-        weightField = new JTextField(String.valueOf(curExercise.getWeightLifted()));
-        repsField = new JTextField(String.valueOf(curExercise.getNumReps()));
-        setsField = new JTextField(String.valueOf(curExercise.getNumSets()));
-        yearField = new JTextField(String.valueOf(log.getDate().split("/")[0]));
-        monthField = new JTextField(String.valueOf(log.getDate().split("/")[1]));
-        dayField = new JTextField(String.valueOf(log.getDate().split("/")[2]));
+                                                    WorkoutSession session, Exercise exercise) {
+        
+        // creates components and populate with existing data
+        nameField = new JTextField(exercise.getExerciseName());
+        muscleComboBox = createMuscleCombo();
+        muscleComboBox.setSelectedItem(exercise.getMuscleType());
+        weightField = new JTextField(String.valueOf(exercise.getWeightLifted()));
+        repsField = new JTextField(String.valueOf(exercise.getNumReps()));
+        setsField = new JTextField(String.valueOf(exercise.getNumSets()));
+        
+        String[] dateParts = session.getDate().split("/");
+        yearField = new JTextField(dateParts[0]);
+        monthField = new JTextField(dateParts[1]);
+        dayField = new JTextField(dateParts[2]);
 
+        // adds components to the panel
         updateExercisePanel.add(new Label("Choose Fields to Update:"));
         updateExercisePanel.add(updateFieldComboBox);
         updateExercisePanel.add(muscleComboBox);
@@ -547,22 +639,61 @@ public class FitnessRecordUI extends JFrame {
     }
 
     /*
-     * REQUIRES: logs != null
      * MODIFIES: this
      * EFFECTS: iterates through all logs and display the details in the main panel
      */
-    private void displayAllLogs(List<Log> logs, String title) {
+    private void displayAllLogs() {
         createDisplayLog();
-        logDisplay.setText("");
-        if (logs.isEmpty()) {
-            JDialog dialog = createDialog("Nothing saved yet", 200, 200);
-            JOptionPane.showMessageDialog(dialog, "No exercise in this application now!!!!");
-        }
-        for (int i = 0; i < logs.size(); i++) {
-            displayLog(logs.get(i).getExercise(), logs.get(i).getDate(), title);
+        logDisplay.setText(""); // clear the display
+
+        List<WorkoutSession> sessions = logbook.getAllSessions();
+
+        if (sessions.isEmpty()) {
+            logDisplay.setText("No exercises have been logged yet.");
+        } else {
+            for (WorkoutSession session : sessions) {
+                // adds a header for the date
+                logDisplay.append("\n===============================\n");
+                logDisplay.append("    DATE: " + session.getDate() + "\n");
+                logDisplay.append("===============================\n");
+
+                List<Exercise> exercises = session.getExercises();
+                if (exercises.isEmpty()) {
+                    logDisplay.append("  (Rest Day / No exercises logged)\n");
+                } else {
+                    for (Exercise ex : exercises) {
+                        displayLog(ex, session.getDate(), "Exercise");
+                    }
+                }
+            }
         }
     }
 
+    /*
+     * REQUIRES: sessions != null, title != null
+     * MODIFIES: this
+     * EFFECTS: Display a *filtered* list of sessions in the main display
+     */
+    private void displayAllLogs(List<WorkoutSession> sessions, String title) {
+        createDisplayLog();
+        logDisplay.setText("");
+        logDisplay.append("--- " + title + " ---\n");
+        if (sessions.isEmpty()) {
+            logDisplay.append("No workout found matching this filter.");
+            return;
+        }
+
+        for (WorkoutSession session : sessions) {
+            logDisplay.append("\n--- " + session.getDate() + " --- \n");
+            if (session.getExercises().isEmpty()) {
+                logDisplay.append("  (No exercises for this session)\n");
+            } else {
+                for (Exercise ex : session.getExercises()) {
+                    displayLog(ex, session.getDate(), "Exercise");
+                }
+            }
+        }
+    }
     /*
      * MODIFIES: this
      * EFFECTS: gives options to users for exercise to be filtered by date or muscle type
@@ -590,11 +721,9 @@ public class FitnessRecordUI extends JFrame {
     }
 
     /*
-     * REUQIRES: dataButton and dialog != null
+     * REUQIRES: dataButton != null
      * MODIFIES: this
      * EFFECTS: pops up a window to filter exercises by date
-     *          allows users to input a date in the format yyyy/mm/dd
-     *          filters the log matching the date and display the result in main panel
      */
     private void filteredByDateEventHandler(JButton dateButton) {
         dateButton.addActionListener(e -> {
@@ -624,7 +753,7 @@ public class FitnessRecordUI extends JFrame {
     /*
      * REQURIES: filterButton and subDialog != null
      * MODIFIES: this
-     * EFFECTS: filters and displays exercises by the inputted date
+     * EFFECTS: filters and displays exercises by the inputted date using logbook
      */
     private void filteredByDateEventHandlerHelper(JButton filterButton, JDialog subDialog) {
         filterButton.addActionListener(event -> {
@@ -632,15 +761,11 @@ public class FitnessRecordUI extends JFrame {
                 String date = String.format("%s/%s/%s", 
                                         yearField.getText(), monthField.getText(), dayField.getText());
 
-                List<Log> filteredLogs = new Log().filteredExercisesByDate(date);
+                List<WorkoutSession> filteredSessions = logbook.filterSessionsByDate(date);
 
-                if (filteredLogs.isEmpty()) {
-                    JOptionPane.showMessageDialog(subDialog, "No exercise founded for the given date!");
-                } else {
-                    displayAllLogs(filteredLogs, "Filtered Exercises");
-                }
-
+                displayAllLogs(filteredSessions, "Workouts on " + date);
                 subDialog.dispose();
+
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(subDialog, "Invalid data format. Please try again.");
             }
@@ -648,15 +773,13 @@ public class FitnessRecordUI extends JFrame {
     }
 
     /*
-     * REUQIRES: muscleTypeButton and dialog != null
+     * REUQIRES: muscleTypeButton != null
      * MODIFIES: this
      * EFFECTS: pops up a window to filter exercises by muscle type
-     *          allows users to input muscle type by choosing
-     *          filters the log matching the muscle type and display the result in main panel
      */
     private void filteredByMuscleTypeEventHandler(JButton muscleTypeButton) {
         muscleTypeButton.addActionListener(e -> {
-            JDialog subDialog = createDialog("Filtered By Exercise Name", 400, 150);
+            JDialog subDialog = createDialog("Filtered By Muscle Type", 400, 150);
 
             JPanel muscleTypePanel = new JPanel();
             muscleTypePanel.setLayout(new GridLayout(2, 1));
@@ -685,72 +808,28 @@ public class FitnessRecordUI extends JFrame {
     /*
      * REQURIES: filterButton and subDialog != null
      * MODIFIES: this
-     * EFFECTS: filteres and displays exercises by the inputted muscle type
+     * EFFECTS: filteres and displays exercises by the inputted muscle type using logbook
      */
     private void filteredByMuscleTypeEventHandlerHelper(JButton filterButton, JDialog subDialog) {
         filterButton.addActionListener(event -> {
             Muscles selectedMuscleType = (Muscles) muscleComboBox.getSelectedItem();
-            List<Log> filteredLogs = new Log().filteredExercisesByType(selectedMuscleType);
+            List<WorkoutSession> filteredSessions = logbook.filterSessionsByMuscle(selectedMuscleType);
 
-            if (filteredLogs.isEmpty()) {
-                JOptionPane.showMessageDialog(subDialog, "No exercise founded for the given muscle type!");
-            } else {
-                displayAllLogs(filteredLogs, "Filtered Exercises");
-            }
-
+            displayAllLogs(filteredSessions, "Workouts for " + selectedMuscleType.toString());
             subDialog.dispose();
         });
     }
 
     /*
      * MODIFIES: a file
-     * EFFECTS: saves all logs to a file
+     * EFFECTS: saves all logs from logbook to its desginated file
      */
     private void saveLogsToFile() {
-        createDisplayLog();
-        String fileName = JOptionPane.showInputDialog(this, "Enter file name to save logs:");
-        if (fileName == null) {
-            JOptionPane.showMessageDialog(this, "File save canceled");
-            return;
-        }
-
-        if (fileName != null && !fileName.trim().isEmpty()) {
-            if (!fileName.equals(fileName + ".json")) {
-                fileName += ".json";
-            }
-
-            saveLogsToFileHelper(fileName);
-
-        } else if (fileName.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "file name cannot be empty!!!!!");
-        }
-    
-    }
-
-    /*
-     * REQUIRES: fileName != null
-     * MODIFIES: this
-     * EFFECTS: converts all logs to JSON format, and writes them to the specified file
-     */
-    private void saveLogsToFileHelper(String fileName) {
-        JsonWriter jsonWriter = new JsonWriter(JSON_STORE + fileName);
-            
         try {
-            JSONArray jsonArray = new JSONArray();
-            jsonWriter.open();
-            List<Log> logs = new Log().getAllExercisesLog();
-
-            if (logs.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No logs to save!");
-            } else {
-                jsonArray = new Log().saveLogsToJSonFile(fileName);
-            }
-
-            jsonWriter.write(jsonArray);
-            jsonWriter.close();
-            JOptionPane.showMessageDialog(this, "Logs saved successfully to " + JSON_STORE + fileName);
+            logbook.saveLogBook();
+            JOptionPane.showMessageDialog(this, "Logs saved successfully!");
         } catch (FileNotFoundException e) {
-            JOptionPane.showMessageDialog(this, "Unable to write logs to the file: " + JSON_STORE + fileName);
+            JOptionPane.showMessageDialog(this, "Unable to write logs to the file: " + e.getMessage());
         }
     }
     
@@ -758,61 +837,12 @@ public class FitnessRecordUI extends JFrame {
      * EFFECTS: loads logs from a file
      */
     private void loadLogsFromFile() {
-        createDisplayLog();
-        File f = new File("./data");
-        String[] files = f.list();
-        displayFileList(files);
-
-        String fileName = JOptionPane.showInputDialog(this, "Enter file name to load logs:");
-        
-        if (fileName == null) {
-            JOptionPane.showMessageDialog(this, "File save canceled");
-            return;
-        }
-
-        if (fileName != null && !fileName.trim().isEmpty()) {
-            if (!fileName.equals(fileName + ".json")) {
-                fileName += ".json";
-            }
-
-            loadLogsFromFileHelper(fileName);
-
-        }
-    }
-
-    /*
-     * REQUIRES: fileName != null
-     * MODIFIES: logDisplay
-     * EFFECTS: reads logs from the specified file and adds them to the displayLog
-     */
-    private void loadLogsFromFileHelper(String fileName) {
-        JsonReader jsonReader = new JsonReader(JSON_STORE + fileName);
-        
-        List<Log> newLogs = new Log().fromJson(jsonReader, fileName);
-        
-        if (newLogs != null) {
-            JOptionPane.showMessageDialog(this, "Logs successfully loaded from " + JSON_STORE + fileName);
-        } else {
-            JOptionPane.showMessageDialog(this, "Unable to read from file: " + JSON_STORE + fileName);  
-        }
-    }
-
-    /*
-     * REQUIRES: files != null
-     * MODIFIES: logDisplay
-     * EFFECTS: if files is empty, shows a message dialog stating "No files available to load!!!"
-     *          Otherwise, updates the logDisplay with the list of file names in files
-     */
-    private void displayFileList(String[] files) {
-
-        if (files.length == 0) {
-            JOptionPane.showMessageDialog(this, "No files available to load!!!");
-        } else {
-            logDisplay.setText("");
-            logDisplay.append("\n**********The list of files in our database!!!!!***********\n");
-            for (String file : files) {
-                logDisplay.append(file + "\n");
-            }
+        try {
+            logbook.loadLogBook();
+            displayAllLogs(); // refreshes the view after loading
+            JOptionPane.showMessageDialog(this, "Logs successfully loaded!");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Unable to read from file: " + e.getMessage());
         }
     }
 

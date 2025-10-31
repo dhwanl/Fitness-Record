@@ -12,7 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import model.Exercise;
-import model.Log;
+import model.WorkoutSession;
 import model.Muscles;
 
 // Referenced from JsonSerialization Demo
@@ -26,16 +26,17 @@ public class JsonReader {
         this.source = source;
     }
 
-    // EFFECTS: reads log from file and return it;
+    // EFFECTS: reads logbook from file and return it as a list of sessions;
     // throws IOException if an error occurs reading data from file
-    public List<Log> read() throws IOException {
+    public List<WorkoutSession> read() throws IOException {
         String jsonData = readFile(source);
-        JSONArray jsonObj = new JSONArray(jsonData);
+
+        JSONArray jsonArray = new JSONArray(jsonData);
         
-        return parseLog(jsonObj);
+        return parseLogbook(jsonArray);
     }
 
-    // EFFECTS: reads log from file and returns it;
+    // EFFECTS: reads source file as string and returns it;
     // throws IOException if an error occurs reading data from file
     public String readFile(String source) throws IOException {
         StringBuilder contentBuilder = new StringBuilder();
@@ -47,35 +48,48 @@ public class JsonReader {
         return contentBuilder.toString();
     }
 
-    // EFFECTS: parses log from JSON object and return it
-    private List<Log> parseLog(JSONArray jsonArray) {
-        List<Log> historyLogs = new ArrayList<Log>();
+    // EFFECTS: parses logbook from JSON array and return it as a list of sessions
+    private List<WorkoutSession> parseLogbook(JSONArray jsonArray) {
+        List<WorkoutSession> sessions = new ArrayList<>();
 
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject objLog = jsonArray.getJSONObject(i);
-            historyLogs.add(addExerciseToLog(objLog)); 
+        for (Object json : jsonArray) {
+            JSONObject sessionJson = (JSONObject) json;
+            WorkoutSession session = parseWorkoutSession(sessionJson);
+            sessions.add(session);
         }
 
-        return historyLogs;
+        return sessions;
     }
 
-    // MODIFIES: log
-    // EFFECTS: parses logs from JSON object and adds them to log
-    private Log addExerciseToLog(JSONObject objLog) {
-        String date = objLog.getString("date");
+    // EFFECTS: parses a single WorkoutSession from JSONObject
+    private WorkoutSession parseWorkoutSession(JSONObject sessionJson) {
+        String date = sessionJson.getString("date");
+        WorkoutSession session = new WorkoutSession(date);
 
-        JSONObject exerciseJson = objLog.getJSONObject("exercise");
+        JSONArray exerciseArray = sessionJson.getJSONArray("exercises");
+        addExerciseToSession(session, exerciseArray);
 
+        return session;
+    }
+    
+    // MODIFIES: session
+    // EFFECTS: parses exercieses from JSONArray and adds them to the workout session
+    private void addExerciseToSession(WorkoutSession session, JSONArray exercisesArray) {
+        for (Object exJson : exercisesArray) {
+            JSONObject exerciseJson = (JSONObject) exJson;
+            Exercise exercise = parseExercise(exerciseJson);
+            session.addExercise(exercise);
+        }
+    }
+
+    // EFFECTS: parses a single Exercise from a JSONObject
+    private Exercise parseExercise(JSONObject exerciseJson) {
         String exerciseName = exerciseJson.getString("exercise name");
         Muscles muscleType = Muscles.valueOf(exerciseJson.getString("muscle Type"));
         int weightLifted = exerciseJson.getInt("weight");
-        int numSets = exerciseJson.getInt("number of sets");
+        int numSets = exerciseJson.getInt("number of Sets");
         int numReps = exerciseJson.getInt("number of Repetitions");
 
-        Exercise newExercise = new Exercise(exerciseName, muscleType, weightLifted, numSets, numReps);
-
-        Log newLog = new Log(newExercise, date);
-
-        return newLog;
+        return new Exercise(exerciseName, muscleType, weightLifted, numSets, numReps);
     }
 }
